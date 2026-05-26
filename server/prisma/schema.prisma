@@ -1,0 +1,66 @@
+// Prisma schema for barbershop appointment system
+// Using SQLite for development — switch datasource to postgresql for production
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Barber {
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  phone        String
+  photo        String        // URL or path to photo
+  bio          String
+  specialties  String        // JSON array stored as string
+  workSchedule String        // JSON object stored as string: { "monday": { "start": "09:00", "end": "18:00" }, ... }
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  appointments Appointment[]
+}
+
+model Service {
+  id           String        @id @default(cuid())
+  name         String
+  description  String
+  duration     Int           // Duration in minutes
+  price        Float
+  category     String        @default("general")
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  appointments Appointment[]
+}
+
+model Customer {
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  phone        String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  appointments Appointment[]
+}
+
+model Appointment {
+  id         String   @id @default(cuid())
+  date       DateTime // The date of the appointment
+  startTime  String   // "09:00" format
+  endTime    String   // "09:30" format
+  status     String   @default("confirmed") // confirmed, pending, cancelled, completed
+  notes      String?
+  barberId   String
+  barber     Barber   @relation(fields: [barberId], references: [id])
+  serviceId  String
+  service    Service  @relation(fields: [serviceId], references: [id])
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
