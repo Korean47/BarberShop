@@ -3,27 +3,27 @@ import { Star, Quote } from 'lucide-react';
 
 const testimonials = [
   {
-    name: 'David Thompson',
-    role: 'Regular Client',
-    text: "Best barbershop I've ever been to. Marcus always nails my fade perfectly. The attention to detail is unmatched.",
+    name: 'Carlos Mendoza',
+    role: 'Cliente frecuente',
+    text: 'Siempre respetan mi horario y el resultado es justo lo que pido. La atención al detalle se nota.',
     rating: 5,
   },
   {
-    name: 'James Rodriguez',
-    role: 'Client since 2021',
-    text: 'The premium experience is worth every penny. Hot towel shave, scalp massage — it\'s pure relaxation. Blades is my go-to.',
+    name: 'Jorge Ramírez',
+    role: 'Cliente desde 2022',
+    text: 'La experiencia premium vale totalmente la pena. Salgo relajado y con un corte impecable.',
     rating: 5,
   },
   {
-    name: 'Michael Chen',
-    role: 'Monthly Member',
-    text: 'Finally found a barber who understands Asian hair. Diego is incredible with textured styles. Booking is seamless too.',
+    name: 'Daniel Flores',
+    role: 'Cliente mensual',
+    text: 'Reservar desde el celular es muy sencillo y Diego entiende perfecto el estilo que estoy buscando.',
     rating: 5,
   },
   {
-    name: 'Robert Williams',
-    role: 'Client since 2019',
-    text: "Tony's old-school razor shave is an experience every man should have. The ambiance, the skill, everything is top-notch.",
+    name: 'Roberto Salazar',
+    role: 'Cliente desde 2020',
+    text: 'El afeitado tradicional y el ambiente hacen que venir aquí sea mucho más que sólo cortarse el cabello.',
     rating: 5,
   },
 ];
@@ -41,10 +41,10 @@ export function Testimonials() {
           className="text-center mb-16"
         >
           <span className="text-brand-400 text-sm font-medium tracking-widest uppercase">
-            Testimonials
+            Testimonios
           </span>
           <h2 className="text-3xl sm:text-4xl font-display font-bold text-white mt-3 mb-4">
-            What Our Clients Say
+            Lo que dicen nuestros clientes
           </h2>
         </motion.div>
 

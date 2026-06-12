@@ -4,9 +4,9 @@ import { Scissors, Menu, X } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 
 const navLinks = [
-  { to: '/', label: 'Home' },
-  { to: '/book', label: 'Book Now' },
-  { to: '/contact', label: 'Contact' },
+  { to: '/', label: 'Inicio' },
+  { to: '/book', label: 'Agendar' },
+  { to: '/contact', label: 'Contacto' },
 ];
 
 export function MainLayout() {
@@ -53,11 +53,11 @@ export function MainLayout() {
             <div className="hidden md:flex items-center gap-3">
               <Link to="/admin">
                 <Button variant="ghost" size="sm">
-                  Admin
+                  Panel
                 </Button>
               </Link>
               <Link to="/book">
-                <Button size="sm">Book Appointment</Button>
+                <Button size="sm">Agendar cita</Button>
               </Link>
             </div>
 
@@ -95,12 +95,12 @@ export function MainLayout() {
               <div className="pt-3 border-t border-white/5 space-y-2">
                 <Link to="/admin" onClick={() => setMobileOpen(false)}>
                   <Button variant="ghost" size="sm" className="w-full justify-center">
-                    Admin Dashboard
+                    Panel administrativo
                   </Button>
                 </Link>
                 <Link to="/book" onClick={() => setMobileOpen(false)}>
                   <Button size="sm" className="w-full justify-center">
-                    Book Appointment
+                    Agendar cita
                   </Button>
                 </Link>
               </div>
@@ -129,36 +129,36 @@ export function MainLayout() {
                 </span>
               </div>
               <p className="text-sm text-slate-400 max-w-sm">
-                Premium barbershop delivering exceptional grooming experiences.
-                Where tradition meets modern style.
+                Una experiencia de barbería para quienes valoran el detalle,
+                la puntualidad y un servicio realmente personal.
               </p>
             </div>
 
             {/* Hours */}
             <div>
-              <h4 className="text-sm font-semibold text-white mb-3">Hours</h4>
+              <h4 className="text-sm font-semibold text-white mb-3">Horario</h4>
               <ul className="space-y-1.5 text-sm text-slate-400">
-                <li>Mon – Wed: 9am – 6pm</li>
-                <li>Thu – Fri: 9am – 8pm</li>
-                <li>Saturday: 9am – 5pm</li>
-                <li>Sunday: Closed</li>
+                <li>Lun – Mié: 9:00 – 18:00</li>
+                <li>Jue – Vie: 9:00 – 20:00</li>
+                <li>Sábado: 9:00 – 17:00</li>
+                <li>Domingo: Cerrado</li>
               </ul>
             </div>
 
             {/* Contact */}
             <div>
-              <h4 className="text-sm font-semibold text-white mb-3">Contact</h4>
+              <h4 className="text-sm font-semibold text-white mb-3">Contacto</h4>
               <ul className="space-y-1.5 text-sm text-slate-400">
-                <li>123 Barber Street</li>
-                <li>Downtown, NY 10001</li>
-                <li>(555) 123-4567</li>
-                <li>hello@blades.com</li>
+                <li>Blvd. Morelos 123</li>
+                <li>Hermosillo, Sonora</li>
+                <li>(662) 123 4567</li>
+                <li>hola@blades.mx</li>
               </ul>
             </div>
           </div>
 
           <div className="mt-10 pt-6 border-t border-white/5 text-center text-xs text-slate-500">
-            © {new Date().getFullYear()} Blades Barbershop. All rights reserved.
+            © {new Date().getFullYear()} Blades Barbería. Todos los derechos reservados.
           </div>
         </div>
       </footer>

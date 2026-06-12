@@ -1,103 +1,103 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Star } from 'lucide-react';
+import { ArrowRight, CalendarCheck2, Clock3, ShieldCheck, Star } from 'lucide-react';
 import { Button } from '../ui/Button';
+import heroImage from '../../assets/barbershop-hero.png';
 
 export function Hero() {
   return (
-    <section className="relative min-h-[90vh] flex items-center overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-brand-600/20 via-transparent to-transparent" />
-      <div className="absolute top-1/4 right-1/4 w-[600px] h-[600px] rounded-full bg-brand-500/5 blur-3xl" />
-
-      {/* Grid pattern overlay */}
-      <div
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage:
-            'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)',
-          backgroundSize: '60px 60px',
-        }}
+    <section className="relative min-h-[calc(100vh-4rem)] overflow-hidden">
+      <img
+        src={heroImage}
+        alt="Barbero profesional realizando un corte"
+        className="absolute inset-0 h-full w-full object-cover object-[68%_center]"
       />
+      <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/90 to-slate-950/10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/20" />
 
-      <div className="section-container relative z-10 py-20">
-        <div className="max-w-3xl">
-          {/* Rating badge */}
+      <div className="section-container relative z-10 flex min-h-[calc(100vh-4rem)] items-center py-20">
+        <div className="max-w-2xl">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 mb-8"
+            className="mb-7 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1.5 backdrop-blur-md"
           >
             <div className="flex">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-3.5 h-3.5 fill-brand-400 text-brand-400" />
+              {Array.from({ length: 5 }, (_, index) => (
+                <Star key={index} className="h-3.5 w-3.5 fill-brand-400 text-brand-400" />
               ))}
             </div>
-            <span className="text-xs text-slate-300">Rated 4.9 by 500+ clients</span>
+            <span className="text-xs text-slate-200">4.9 de calificación por nuestros clientes</span>
           </motion.div>
 
-          {/* Heading */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold text-white leading-[1.1] mb-6"
-          >
-            Premium{' '}
-            <span className="text-gradient">Grooming</span>{' '}
-            Experience
-          </motion.h1>
-
-          {/* Subheading */}
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg sm:text-xl text-slate-400 mb-10 max-w-xl leading-relaxed"
+            transition={{ delay: 0.05 }}
+            className="mb-4 text-sm font-semibold uppercase tracking-[0.26em] text-brand-400"
           >
-            Where tradition meets modern style. Expert barbers, premium products,
-            and an atmosphere crafted for the modern gentleman.
+            Barbería premium en Hermosillo
           </motion.p>
 
-          {/* CTAs */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
+          <motion.h1
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-wrap gap-4"
+            transition={{ delay: 0.1 }}
+            className="font-display text-5xl font-bold leading-[1.05] text-white sm:text-6xl lg:text-7xl"
+          >
+            Tu estilo merece
+            <span className="block text-gradient">su propio ritual.</span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mt-6 max-w-xl text-base leading-relaxed text-slate-300 sm:text-lg"
+          >
+            Reserva en minutos, elige a tu barbero y llega directo a disfrutar una experiencia
+            cuidada hasta el último detalle.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-9 flex flex-wrap gap-3"
           >
             <Link to="/book">
               <Button size="lg">
-                Book Appointment
-                <ArrowRight className="w-4 h-4" />
+                Agendar mi cita
+                <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Link to="/contact">
-              <Button variant="outline" size="lg">
-                Contact Us
-              </Button>
-            </Link>
+            <a href="#services">
+              <Button variant="secondary" size="lg">Ver servicios</Button>
+            </a>
           </motion.div>
 
-          {/* Stats */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="flex gap-10 mt-16 pt-10 border-t border-white/5"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="mt-12 grid max-w-xl grid-cols-3 gap-3 border-t border-white/10 pt-6"
           >
             {[
-              { value: '12+', label: 'Years Experience' },
-              { value: '15K+', label: 'Happy Clients' },
-              { value: '4', label: 'Expert Barbers' },
-            ].map((stat) => (
-              <div key={stat.label}>
-                <div className="text-2xl font-bold text-white">{stat.value}</div>
-                <div className="text-sm text-slate-500">{stat.label}</div>
-              </div>
-            ))}
+              { icon: CalendarCheck2, value: 'En línea', label: 'Reserva 24/7' },
+              { icon: Clock3, value: 'A tiempo', label: 'Sin largas esperas' },
+              { icon: ShieldCheck, value: 'Profesional', label: 'Servicio garantizado' },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.label} className="flex gap-2">
+                  <Icon className="mt-0.5 hidden h-4 w-4 text-brand-400 sm:block" />
+                  <div>
+                    <p className="text-sm font-semibold text-white">{item.value}</p>
+                    <p className="mt-0.5 text-[10px] text-slate-500 sm:text-xs">{item.label}</p>
+                  </div>
+                </div>
+              );
+            })}
           </motion.div>
         </div>
       </div>

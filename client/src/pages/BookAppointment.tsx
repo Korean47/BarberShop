@@ -21,12 +21,12 @@ import { PageSpinner } from '../components/ui/Spinner';
 import type { Barber, Service, TimeSlot } from '../types';
 
 const steps = [
-  { id: 1, label: 'Barber', icon: User },
-  { id: 2, label: 'Service', icon: Scissors },
-  { id: 3, label: 'Date', icon: CalendarDays },
-  { id: 4, label: 'Time', icon: Clock },
-  { id: 5, label: 'Details', icon: ClipboardList },
-  { id: 6, label: 'Confirm', icon: CheckCircle2 },
+  { id: 1, label: 'Barbero', icon: User },
+  { id: 2, label: 'Servicio', icon: Scissors },
+  { id: 3, label: 'Fecha', icon: CalendarDays },
+  { id: 4, label: 'Horario', icon: Clock },
+  { id: 5, label: 'Tus datos', icon: ClipboardList },
+  { id: 6, label: 'Confirmar', icon: CheckCircle2 },
 ];
 
 export function BookAppointment() {
@@ -78,7 +78,7 @@ export function BookAppointment() {
       })
       .catch((err) => {
         console.error(err);
-        toast.error('Failed to load barbers and services');
+        toast.error('No pudimos cargar los barberos y servicios');
       })
       .finally(() => setLoading(false));
   }, [preselectedBarber]);
@@ -86,6 +86,8 @@ export function BookAppointment() {
   // Fetch availability when barber + service + date selected
   useEffect(() => {
     if (!selectedBarber || !selectedService || !selectedDate) return;
+    // Loading a new availability set is the intended synchronization for this effect.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSlotsLoading(true);
     setSelectedSlot(null);
     const dateStr = formatDateToAPI(selectedDate);
@@ -96,16 +98,16 @@ export function BookAppointment() {
       })
       .catch((err) => {
         console.error(err);
-        toast.error('Failed to load availability');
+        toast.error('No pudimos consultar la disponibilidad');
       })
       .finally(() => setSlotsLoading(false));
   }, [selectedBarber, selectedService, selectedDate]);
 
   const validateForm = () => {
     const e: Record<string, string> = {};
-    if (!customer.name.trim() || customer.name.trim().length < 2) e.name = 'Name is required (min 2 chars)';
-    if (!customer.email.trim() || !/\S+@\S+\.\S+/.test(customer.email)) e.email = 'Valid email is required';
-    if (!customer.phone.trim() || customer.phone.trim().length < 7) e.phone = 'Phone is required (min 7 chars)';
+    if (!customer.name.trim() || customer.name.trim().length < 2) e.name = 'Escribe tu nombre completo';
+    if (!customer.email.trim() || !/\S+@\S+\.\S+/.test(customer.email)) e.email = 'Escribe un correo válido';
+    if (!customer.phone.trim() || customer.phone.trim().length < 7) e.phone = 'Escribe un teléfono válido';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -125,9 +127,9 @@ export function BookAppointment() {
         notes: customer.notes || undefined,
       });
       setBooked(true);
-      toast.success('Appointment booked successfully!');
+      toast.success('¡Tu cita quedó agendada!');
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Booking failed');
+      toast.error(err instanceof Error ? err.message : 'No pudimos completar la reserva');
     } finally {
       setSubmitting(false);
     }
@@ -165,17 +167,17 @@ export function BookAppointment() {
             <CheckCircle2 className="w-10 h-10 text-emerald-400" />
           </div>
           <h2 className="text-2xl font-display font-bold text-white mb-3">
-            Appointment Booked!
+            ¡Cita confirmada!
           </h2>
           <p className="text-slate-400 mb-2">
-            Your appointment with <strong className="text-white">{selectedBarber?.name}</strong> is confirmed.
+            Tu cita con <strong className="text-white">{selectedBarber?.name}</strong> quedó confirmada.
           </p>
           <p className="text-slate-400 mb-8">
             {selectedDate && formatDateLong(selectedDate)} at {selectedSlot && formatTime(selectedSlot.start)}
           </p>
           <div className="flex gap-3 justify-center">
             <Button onClick={() => { setBooked(false); setStep(1); setSelectedBarber(null); setSelectedService(null); setSelectedDate(null); setSelectedSlot(null); setCustomer({ name: '', email: '', phone: '', notes: '' }); }}>
-              Book Another
+              Agendar otra cita
             </Button>
           </div>
         </motion.div>
@@ -188,7 +190,7 @@ export function BookAppointment() {
     const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
     const firstDay = new Date(calYear, calMonth, 1).getDay();
     const today = new Date();
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
     const cells: React.ReactNode[] = [];
 
     // Empty cells for days before month starts
@@ -243,7 +245,7 @@ export function BookAppointment() {
             <ChevronLeft className="w-5 h-5" />
           </button>
           <h3 className="text-sm font-semibold text-white">
-            {new Date(calYear, calMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            {new Date(calYear, calMonth).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })}
           </h3>
           <button
             disabled={new Date(calYear, calMonth) >= new Date(today.getFullYear(), today.getMonth() + 2)}
@@ -281,10 +283,10 @@ export function BookAppointment() {
         className="text-center mb-10"
       >
         <h1 className="text-3xl font-display font-bold text-white mb-2">
-          Book Your Appointment
+          Agenda tu cita
         </h1>
         <p className="text-slate-400">
-          Choose your barber, service, and preferred time.
+          Elige tu barbero, servicio y el horario que más te convenga.
         </p>
       </motion.div>
 
@@ -342,7 +344,7 @@ export function BookAppointment() {
             {/* Step 1: Select Barber */}
             {step === 1 && (
               <div>
-                <h2 className="text-xl font-semibold text-white mb-6">Choose Your Barber</h2>
+                <h2 className="text-xl font-semibold text-white mb-6">Elige a tu barbero</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {barbers.map((barber) => {
                     const selected = selectedBarber?.id === barber.id;
@@ -384,7 +386,7 @@ export function BookAppointment() {
             {/* Step 2: Select Service */}
             {step === 2 && (
               <div>
-                <h2 className="text-xl font-semibold text-white mb-6">Choose a Service</h2>
+                <h2 className="text-xl font-semibold text-white mb-6">Elige un servicio</h2>
                 <div className="space-y-3">
                   {services.map((service) => {
                     const selected = selectedService?.id === service.id;
@@ -418,13 +420,13 @@ export function BookAppointment() {
             {/* Step 3: Select Date */}
             {step === 3 && (
               <div>
-                <h2 className="text-xl font-semibold text-white mb-6">Pick a Date</h2>
+                <h2 className="text-xl font-semibold text-white mb-6">Selecciona una fecha</h2>
                 <div className="glass-card p-6 max-w-sm mx-auto">
                   {renderCalendar()}
                 </div>
                 {selectedDate && (
                   <p className="text-center text-sm text-brand-400 mt-4">
-                    Selected: {formatDateLong(selectedDate)}
+                    Fecha seleccionada: {formatDateLong(selectedDate)}
                   </p>
                 )}
               </div>
@@ -433,28 +435,28 @@ export function BookAppointment() {
             {/* Step 4: Select Time */}
             {step === 4 && (
               <div>
-                <h2 className="text-xl font-semibold text-white mb-2">Select a Time</h2>
+                <h2 className="text-xl font-semibold text-white mb-2">Selecciona un horario</h2>
                 <p className="text-sm text-slate-400 mb-6">
-                  Available slots for {selectedBarber?.name} on{' '}
+                  Horarios disponibles con {selectedBarber?.name} para el{' '}
                   {selectedDate && formatDateLong(selectedDate)}
                 </p>
 
                 {slotsLoading ? (
-                  <div className="py-10 text-center text-slate-500">Loading availability...</div>
+                  <div className="py-10 text-center text-slate-500">Consultando disponibilidad...</div>
                 ) : isDayOff ? (
                   <div className="glass-card p-8 text-center">
                     <p className="text-slate-400">
-                      {selectedBarber?.name} is not available on this day.
+                      {selectedBarber?.name} no trabaja este día.
                     </p>
                     <Button variant="outline" className="mt-4" onClick={prevStep}>
-                      Pick Another Date
+                      Elegir otra fecha
                     </Button>
                   </div>
                 ) : availableSlots.length === 0 ? (
                   <div className="glass-card p-8 text-center">
-                    <p className="text-slate-400">No available slots for this date.</p>
+                    <p className="text-slate-400">Ya no hay horarios disponibles para esta fecha.</p>
                     <Button variant="outline" className="mt-4" onClick={prevStep}>
-                      Pick Another Date
+                      Elegir otra fecha
                     </Button>
                   </div>
                 ) : (
@@ -486,17 +488,17 @@ export function BookAppointment() {
             {/* Step 5: Customer Details */}
             {step === 5 && (
               <div>
-                <h2 className="text-xl font-semibold text-white mb-6">Your Details</h2>
+                <h2 className="text-xl font-semibold text-white mb-6">Tus datos</h2>
                 <div className="glass-card p-6 space-y-4">
                   <Input
-                    label="Full Name"
-                    placeholder="John Doe"
+                    label="Nombre completo"
+                    placeholder="Tu nombre"
                     value={customer.name}
                     onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
                     error={errors.name}
                   />
                   <Input
-                    label="Email"
+                    label="Correo electrónico"
                     type="email"
                     placeholder="john@example.com"
                     value={customer.email}
@@ -504,7 +506,7 @@ export function BookAppointment() {
                     error={errors.email}
                   />
                   <Input
-                    label="Phone"
+                    label="Teléfono"
                     type="tel"
                     placeholder="(555) 123-4567"
                     value={customer.phone}
@@ -513,11 +515,11 @@ export function BookAppointment() {
                   />
                   <div className="space-y-1.5">
                     <label className="block text-sm font-medium text-slate-300">
-                      Notes (optional)
+                      Notas (opcional)
                     </label>
                     <textarea
                       rows={3}
-                      placeholder="Any special requests?"
+                      placeholder="¿Hay algo que debamos saber?"
                       value={customer.notes}
                       onChange={(e) => setCustomer({ ...customer, notes: e.target.value })}
                       className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200 resize-none"
@@ -530,7 +532,7 @@ export function BookAppointment() {
             {/* Step 6: Confirmation */}
             {step === 6 && (
               <div>
-                <h2 className="text-xl font-semibold text-white mb-6">Confirm Your Appointment</h2>
+                <h2 className="text-xl font-semibold text-white mb-6">Confirma tu cita</h2>
                 <div className="glass-card p-6 space-y-4">
                   <div className="flex items-center gap-4 pb-4 border-b border-white/5">
                     <img
@@ -540,48 +542,48 @@ export function BookAppointment() {
                     />
                     <div>
                       <h3 className="font-semibold text-white">{selectedBarber?.name}</h3>
-                      <p className="text-sm text-slate-400">Barber</p>
+                      <p className="text-sm text-slate-400">Barbero</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-slate-500">Service</span>
+                      <span className="text-slate-500">Servicio</span>
                       <p className="text-white font-medium">{selectedService?.name}</p>
                     </div>
                     <div>
-                      <span className="text-slate-500">Price</span>
+                      <span className="text-slate-500">Precio</span>
                       <p className="text-brand-400 font-semibold">
                         {selectedService && formatPrice(selectedService.price)}
                       </p>
                     </div>
                     <div>
-                      <span className="text-slate-500">Date</span>
+                      <span className="text-slate-500">Fecha</span>
                       <p className="text-white font-medium">
                         {selectedDate && formatDateLong(selectedDate)}
                       </p>
                     </div>
                     <div>
-                      <span className="text-slate-500">Time</span>
+                      <span className="text-slate-500">Horario</span>
                       <p className="text-white font-medium">
                         {selectedSlot && `${formatTime(selectedSlot.start)} – ${formatTime(selectedSlot.end)}`}
                       </p>
                     </div>
                     <div>
-                      <span className="text-slate-500">Duration</span>
+                      <span className="text-slate-500">Duración</span>
                       <p className="text-white font-medium">
                         {selectedService && formatDuration(selectedService.duration)}
                       </p>
                     </div>
                     <div>
-                      <span className="text-slate-500">Customer</span>
+                      <span className="text-slate-500">Cliente</span>
                       <p className="text-white font-medium">{customer.name}</p>
                     </div>
                   </div>
 
                   {customer.notes && (
                     <div className="pt-3 border-t border-white/5">
-                      <span className="text-sm text-slate-500">Notes</span>
+                      <span className="text-sm text-slate-500">Notas</span>
                       <p className="text-sm text-slate-300 mt-1">{customer.notes}</p>
                     </div>
                   )}
@@ -599,18 +601,18 @@ export function BookAppointment() {
             disabled={step === 1}
           >
             <ChevronLeft className="w-4 h-4" />
-            Back
+            Atrás
           </Button>
 
           {step < 6 ? (
             <Button onClick={nextStep} disabled={!canProceed()}>
-              Next
+              Continuar
               <ChevronRight className="w-4 h-4" />
             </Button>
           ) : (
             <Button onClick={handleSubmit} loading={submitting}>
               <CheckCircle2 className="w-4 h-4" />
-              Confirm Booking
+              Confirmar cita
             </Button>
           )}
         </div>

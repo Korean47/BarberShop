@@ -17,7 +17,7 @@ export function Home() {
       .then(setBarbers)
       .catch((err) => {
         console.error(err);
-        toast.error('Failed to load team data');
+        toast.error('No pudimos cargar la información del equipo');
       });
   }, []);
 

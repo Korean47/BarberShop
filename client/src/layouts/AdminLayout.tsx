@@ -1,167 +1,156 @@
 import { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import {
-  Scissors,
-  LayoutDashboard,
-  Calendar,
-  Users,
-  Settings,
-  Menu,
+  CalendarDays,
   ChevronLeft,
+  FileText,
+  LayoutDashboard,
+  Menu,
+  Package,
+  Scissors,
+  Settings,
+  Users,
+  WalletCards,
+  X,
 } from 'lucide-react';
 
-const sidebarLinks = [
-  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/admin/appointments', label: 'Appointments', icon: Calendar },
-  { to: '/admin/barbers', label: 'Barbers', icon: Users },
-  { to: '/admin/settings', label: 'Settings', icon: Settings },
+const navigation = [
+  { to: '/admin', label: 'Resumen', icon: LayoutDashboard },
+  { to: '/admin/appointments', label: 'Agenda', icon: CalendarDays },
+  { to: '/admin/customers', label: 'Clientes', icon: Users },
+  { to: '/admin/finances', label: 'Finanzas', icon: WalletCards },
+  { to: '/admin/barbers', label: 'Barberos', icon: Scissors },
+  { to: '/admin/inventory', label: 'Inventario', icon: Package },
+  { to: '/admin/documents', label: 'Documentos', icon: FileText },
+  { to: '/admin/settings', label: 'Configuración', icon: Settings },
 ];
+
+const pageNames: Record<string, string> = {
+  '/admin': 'Resumen',
+  '/admin/appointments': 'Agenda y citas',
+  '/admin/customers': 'Clientes',
+  '/admin/finances': 'Finanzas',
+  '/admin/barbers': 'Equipo',
+  '/admin/inventory': 'Inventario',
+  '/admin/documents': 'Documentos',
+  '/admin/settings': 'Configuración',
+};
 
 export function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
-  const isActive = (path: string) => {
-    if (path === '/admin') return location.pathname === '/admin';
-    return location.pathname.startsWith(path);
-  };
+  const isActive = (path: string) =>
+    path === '/admin' ? location.pathname === path : location.pathname.startsWith(path);
+
+  const navContent = (mobile = false) => (
+    <>
+      <div className="flex h-20 items-center border-b border-white/5 px-4">
+        <Link to="/" className="flex items-center gap-3" onClick={() => mobile && setMobileOpen(false)}>
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 shadow-lg shadow-brand-500/20">
+            <Scissors className="h-5 w-5 text-slate-950" />
+          </div>
+          {(!collapsed || mobile) && (
+            <div>
+              <p className="font-display text-lg font-semibold text-white">Blades</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-brand-400">Administración</p>
+            </div>
+          )}
+        </Link>
+      </div>
+      <nav className="flex-1 space-y-1 overflow-y-auto px-2 py-5">
+        {navigation.map((item) => {
+          const Icon = item.icon;
+          const active = isActive(item.to);
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              onClick={() => mobile && setMobileOpen(false)}
+              title={collapsed && !mobile ? item.label : undefined}
+              className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+                active
+                  ? 'bg-brand-500/10 text-brand-400'
+                  : 'text-slate-500 hover:bg-white/5 hover:text-slate-200'
+              }`}
+            >
+              <Icon className={`h-5 w-5 shrink-0 ${active ? 'text-brand-400' : 'group-hover:text-slate-300'}`} />
+              {(!collapsed || mobile) && item.label}
+            </Link>
+          );
+        })}
+      </nav>
+      <div className="border-t border-white/5 p-3">
+        {(!collapsed || mobile) && (
+          <div className="mb-3 flex items-center gap-3 rounded-xl bg-white/[0.03] p-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500/15 text-xs font-bold text-brand-400">
+              AR
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-medium text-white">Alejandro Ruiz</p>
+              <p className="text-[10px] text-slate-500">Administrador</p>
+            </div>
+          </div>
+        )}
+        {!mobile && (
+          <button
+            onClick={() => setCollapsed((value) => !value)}
+            className="flex w-full items-center justify-center rounded-lg p-2 text-slate-600 hover:bg-white/5 hover:text-white"
+            title={collapsed ? 'Expandir menú' : 'Contraer menú'}
+          >
+            <ChevronLeft className={`h-4 w-4 transition-transform ${collapsed ? 'rotate-180' : ''}`} />
+          </button>
+        )}
+      </div>
+    </>
+  );
 
   return (
-    <div className="min-h-screen flex">
-      {/* Sidebar - Desktop */}
-      <aside
-        className={`
-          hidden lg:flex flex-col
-          bg-slate-900 border-r border-white/5
-          transition-all duration-300
-          ${collapsed ? 'w-16' : 'w-64'}
-        `}
-      >
-        {/* Logo */}
-        <div className="h-16 flex items-center px-4 border-b border-white/5">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center flex-shrink-0">
-              <Scissors className="w-4 h-4 text-white" />
-            </div>
-            {!collapsed && (
-              <span className="font-display text-lg font-semibold text-white">
-                Blades
-              </span>
-            )}
-          </Link>
-        </div>
-
-        {/* Nav links */}
-        <nav className="flex-1 py-4 px-2 space-y-1">
-          {sidebarLinks.map((link) => {
-            const Icon = link.icon;
-            return (
-              <Link
-                key={link.to}
-                to={link.to}
-                className={`
-                  flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
-                  transition-all duration-200
-                  ${
-                    isActive(link.to)
-                      ? 'text-brand-400 bg-brand-500/10'
-                      : 'text-slate-400 hover:text-white hover:bg-white/5'
-                  }
-                `}
-                title={collapsed ? link.label : undefined}
-              >
-                <Icon className="w-5 h-5 flex-shrink-0" />
-                {!collapsed && link.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Collapse button */}
-        <div className="p-2 border-t border-white/5">
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="w-full flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-white hover:bg-white/5 transition-colors"
-          >
-            <ChevronLeft
-              className={`w-4 h-4 transition-transform ${collapsed ? 'rotate-180' : ''}`}
-            />
-          </button>
-        </div>
+    <div className="flex min-h-screen bg-[#0a101c]">
+      <aside className={`hidden shrink-0 flex-col border-r border-white/5 bg-[#0c1322] transition-[width] duration-300 lg:flex ${collapsed ? 'w-[72px]' : 'w-64'}`}>
+        {navContent()}
       </aside>
 
-      {/* Mobile sidebar overlay */}
       {mobileOpen && (
-        <div
-          className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-          onClick={() => setMobileOpen(false)}
-        >
-          <aside
-            className="w-64 h-full bg-slate-900 border-r border-white/5"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="h-16 flex items-center px-4 border-b border-white/5">
-              <Link to="/" className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center">
-                  <Scissors className="w-4 h-4 text-white" />
-                </div>
-                <span className="font-display text-lg font-semibold text-white">
-                  Blades
-                </span>
-              </Link>
-            </div>
-            <nav className="py-4 px-2 space-y-1">
-              {sidebarLinks.map((link) => {
-                const Icon = link.icon;
-                return (
-                  <Link
-                    key={link.to}
-                    to={link.to}
-                    onClick={() => setMobileOpen(false)}
-                    className={`
-                      flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
-                      transition-all duration-200
-                      ${
-                        isActive(link.to)
-                          ? 'text-brand-400 bg-brand-500/10'
-                          : 'text-slate-400 hover:text-white hover:bg-white/5'
-                      }
-                    `}
-                  >
-                    <Icon className="w-5 h-5 flex-shrink-0" />
-                    {link.label}
-                  </Link>
-                );
-              })}
-            </nav>
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm lg:hidden" onClick={() => setMobileOpen(false)}>
+          <aside className="flex h-full w-72 flex-col bg-[#0c1322]" onClick={(event) => event.stopPropagation()}>
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="absolute right-4 top-4 rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-white"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            {navContent(true)}
           </aside>
         </div>
       )}
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar */}
-        <header className="h-16 flex items-center px-4 lg:px-8 border-b border-white/5 bg-slate-900/50 backdrop-blur-lg">
+      <div className="min-w-0 flex-1">
+        <header className="sticky top-0 z-30 flex h-20 items-center border-b border-white/5 bg-[#0a101c]/90 px-4 backdrop-blur-xl lg:px-8">
           <button
-            className="lg:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 mr-3"
             onClick={() => setMobileOpen(true)}
+            className="mr-3 rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-white lg:hidden"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="h-5 w-5" />
           </button>
-          <h1 className="text-lg font-semibold text-white">Admin Dashboard</h1>
-          <div className="ml-auto">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-slate-600">Panel administrativo</p>
+            <h1 className="text-base font-semibold text-white">{pageNames[location.pathname] || 'Administración'}</h1>
+          </div>
+          <div className="ml-auto flex items-center gap-3">
+            <span className="hidden rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1 text-xs text-emerald-400 sm:block">
+              Negocio abierto
+            </span>
             <Link
               to="/"
-              className="text-sm text-slate-400 hover:text-white transition-colors"
+              className="rounded-xl border border-white/10 px-3 py-2 text-xs font-medium text-slate-400 hover:bg-white/5 hover:text-white"
             >
-              ← Back to Site
+              Ver sitio público
             </Link>
           </div>
         </header>
-
-        {/* Page content */}
-        <main className="flex-1 p-4 lg:p-8 overflow-auto">
+        <main className="p-4 lg:p-8">
           <Outlet />
         </main>
       </div>

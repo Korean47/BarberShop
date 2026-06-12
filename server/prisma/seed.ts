@@ -96,60 +96,60 @@ async function main() {
     prisma.service.create({
       data: {
         id: 'service-1',
-        name: 'Classic Haircut',
-        description: 'Traditional haircut with clippers and scissors. Includes consultation, shampoo, and styling.',
+        name: 'Corte clásico',
+        description: 'Corte tradicional con máquina y tijera. Incluye asesoría y peinado.',
         duration: 30,
-        price: 35,
+        price: 350,
         category: 'haircut',
       },
     }),
     prisma.service.create({
       data: {
         id: 'service-2',
-        name: 'Signature Fade',
-        description: 'Precision skin fade or taper fade with detailed line work and edge-up.',
+        name: 'Fade signature',
+        description: 'Desvanecido de precisión con contornos limpios y acabado detallado.',
         duration: 45,
-        price: 45,
+        price: 450,
         category: 'haircut',
       },
     }),
     prisma.service.create({
       data: {
         id: 'service-3',
-        name: 'Beard Trim & Shape',
-        description: 'Expert beard trimming, shaping, and conditioning with hot towel treatment.',
+        name: 'Perfilado de barba',
+        description: 'Recorte, diseño y acondicionamiento de barba con toalla caliente.',
         duration: 20,
-        price: 25,
+        price: 280,
         category: 'beard',
       },
     }),
     prisma.service.create({
       data: {
         id: 'service-4',
-        name: 'Hot Towel Shave',
-        description: 'Luxurious straight razor shave with hot towel prep, premium shaving cream, and aftershave balm.',
+        name: 'Afeitado tradicional',
+        description: 'Afeitado con navaja, toalla caliente y productos de cuidado premium.',
         duration: 40,
-        price: 40,
+        price: 380,
         category: 'shave',
       },
     }),
     prisma.service.create({
       data: {
         id: 'service-5',
-        name: 'Haircut + Beard Combo',
-        description: 'Complete grooming package: precision haircut combined with beard trim and shaping.',
+        name: 'Corte + barba',
+        description: 'Servicio completo con corte de precisión y diseño profesional de barba.',
         duration: 50,
-        price: 55,
+        price: 550,
         category: 'combo',
       },
     }),
     prisma.service.create({
       data: {
         id: 'service-6',
-        name: 'The Premium Experience',
-        description: 'Our signature service: haircut, hot towel shave, beard grooming, scalp massage, and styling. The ultimate grooming experience.',
+        name: 'Experiencia premium',
+        description: 'Corte, afeitado, cuidado de barba, masaje capilar y peinado final.',
         duration: 75,
-        price: 85,
+        price: 850,
         category: 'premium',
       },
     }),
@@ -158,19 +158,19 @@ async function main() {
   // --- Customers ---
   const customers = await Promise.all([
     prisma.customer.create({
-      data: { id: 'cust-1', name: 'Alex Johnson', email: 'alex@email.com', phone: '(555) 200-0001' },
+        data: { id: 'cust-1', name: 'Carlos Mendoza', email: 'carlos@email.com', phone: '(662) 200-0001' },
     }),
     prisma.customer.create({
-      data: { id: 'cust-2', name: 'Ryan Park', email: 'ryan@email.com', phone: '(555) 200-0002' },
+        data: { id: 'cust-2', name: 'Jorge Ramírez', email: 'jorge@email.com', phone: '(662) 200-0002' },
     }),
     prisma.customer.create({
-      data: { id: 'cust-3', name: 'Chris Davis', email: 'chris@email.com', phone: '(555) 200-0003' },
+        data: { id: 'cust-3', name: 'Daniel Flores', email: 'daniel@email.com', phone: '(662) 200-0003' },
     }),
     prisma.customer.create({
-      data: { id: 'cust-4', name: 'Mike Torres', email: 'mike@email.com', phone: '(555) 200-0004' },
+        data: { id: 'cust-4', name: 'Miguel Torres', email: 'miguel@email.com', phone: '(662) 200-0004' },
     }),
     prisma.customer.create({
-      data: { id: 'cust-5', name: 'Sam Wilson', email: 'sam@email.com', phone: '(555) 200-0005' },
+        data: { id: 'cust-5', name: 'Luis García', email: 'luis@email.com', phone: '(662) 200-0005' },
     }),
   ]);
 

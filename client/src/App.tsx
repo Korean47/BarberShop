@@ -8,8 +8,12 @@ import { BarberDetails } from './pages/BarberDetails';
 import { Contact } from './pages/Contact';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { NotFound } from './pages/NotFound';
-
+import { AdminAppointments } from './pages/AdminAppointments';
 import { AdminBarbers } from './pages/AdminBarbers';
+import { AdminCustomers } from './pages/AdminCustomers';
+import { AdminFinances } from './pages/AdminFinances';
+import { AdminInventory } from './pages/AdminInventory';
+import { AdminDocuments } from './pages/AdminDocuments';
 import { AdminSettings } from './pages/AdminSettings';
 
 export default function App() {
@@ -47,8 +51,12 @@ export default function App() {
         {/* Admin routes */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
-          <Route path="appointments" element={<AdminDashboard />} />
+          <Route path="appointments" element={<AdminAppointments />} />
+          <Route path="customers" element={<AdminCustomers />} />
+          <Route path="finances" element={<AdminFinances />} />
           <Route path="barbers" element={<AdminBarbers />} />
+          <Route path="inventory" element={<AdminInventory />} />
+          <Route path="documents" element={<AdminDocuments />} />
           <Route path="settings" element={<AdminSettings />} />
         </Route>
       </Routes>

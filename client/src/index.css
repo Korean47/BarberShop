@@ -1,9 +1,9 @@
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
 
 @layer base {
   * {
@@ -80,6 +80,14 @@
   }
   .badge-completed {
     @apply bg-blue-500/20 text-blue-400 border border-blue-500/30;
+  }
+
+  .admin-card {
+    @apply rounded-2xl border border-white/[0.07] bg-[#101827] shadow-lg shadow-black/5;
+  }
+
+  .admin-input {
+    @apply block w-full rounded-xl border border-white/10 bg-slate-950/40 px-3.5 py-2.5 text-sm text-slate-200 outline-none transition placeholder:text-slate-600 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/10;
   }
 }
 

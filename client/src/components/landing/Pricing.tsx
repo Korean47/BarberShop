@@ -5,38 +5,38 @@ import { Button } from '../ui/Button';
 
 const plans = [
   {
-    name: 'Classic Cut',
-    price: 35,
-    description: 'Perfect for a quick, clean haircut.',
-    features: ['Consultation', 'Precision haircut', 'Shampoo & style', 'Neck cleanup'],
+    name: 'Corte clásico',
+    price: 350,
+    description: 'Ideal para mantener un estilo limpio y preciso.',
+    features: ['Asesoría de estilo', 'Corte de precisión', 'Peinado', 'Limpieza de contornos'],
     popular: false,
   },
   {
-    name: 'Haircut + Beard',
-    price: 55,
-    description: 'The complete grooming package.',
+    name: 'Corte + barba',
+    price: 550,
+    description: 'El servicio completo para renovar tu imagen.',
     features: [
-      'Consultation',
-      'Precision haircut',
-      'Beard trim & shape',
-      'Hot towel treatment',
-      'Shampoo & style',
-      'Product finish',
+      'Asesoría personalizada',
+      'Corte de precisión',
+      'Recorte y diseño de barba',
+      'Tratamiento con toalla caliente',
+      'Peinado',
+      'Producto de acabado',
     ],
     popular: true,
   },
   {
-    name: 'Premium Experience',
-    price: 85,
-    description: 'Our ultimate grooming ritual.',
+    name: 'Experiencia premium',
+    price: 850,
+    description: 'Nuestro ritual de cuidado más completo.',
     features: [
-      'Full consultation',
-      'Signature haircut',
-      'Hot towel shave',
-      'Beard grooming',
-      'Scalp massage',
-      'Premium products',
-      'Complimentary drink',
+      'Asesoría completa',
+      'Corte signature',
+      'Afeitado con toalla caliente',
+      'Cuidado de barba',
+      'Masaje capilar',
+      'Productos premium',
+      'Bebida de cortesía',
     ],
     popular: false,
   },
@@ -55,13 +55,13 @@ export function Pricing() {
           className="text-center mb-16"
         >
           <span className="text-brand-400 text-sm font-medium tracking-widest uppercase">
-            Pricing
+            Precios
           </span>
           <h2 className="text-3xl sm:text-4xl font-display font-bold text-white mt-3 mb-4">
-            Simple, Transparent Pricing
+            Precios claros, sin sorpresas
           </h2>
           <p className="text-slate-400 max-w-xl mx-auto">
-            Choose the service that fits your style. No hidden fees.
+            Elige la experiencia que mejor se adapta a tu estilo.
           </p>
         </motion.div>
 
@@ -85,14 +85,14 @@ export function Pricing() {
             >
               {plan.popular && (
                 <span className="inline-block text-xs font-medium text-brand-400 bg-brand-500/10 px-2.5 py-1 rounded-full mb-4">
-                  Most Popular
+                  Más solicitado
                 </span>
               )}
               <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
               <p className="text-sm text-slate-400 mt-1 mb-4">{plan.description}</p>
               <div className="flex items-baseline gap-1 mb-6">
                 <span className="text-4xl font-bold text-white">${plan.price}</span>
-                <span className="text-sm text-slate-500">/visit</span>
+                <span className="text-sm text-slate-500">/visita</span>
               </div>
               <ul className="space-y-2.5 mb-6">
                 {plan.features.map((f) => (
@@ -107,7 +107,7 @@ export function Pricing() {
                   variant={plan.popular ? 'primary' : 'outline'}
                   className="w-full justify-center"
                 >
-                  Book Now
+                  Agendar ahora
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>

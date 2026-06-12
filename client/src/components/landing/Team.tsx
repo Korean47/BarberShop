@@ -22,14 +22,13 @@ export function Team({ barbers }: TeamProps) {
           className="text-center mb-16"
         >
           <span className="text-brand-400 text-sm font-medium tracking-widest uppercase">
-            The Team
+            Nuestro equipo
           </span>
           <h2 className="text-3xl sm:text-4xl font-display font-bold text-white mt-3 mb-4">
-            Meet Our Expert Barbers
+            Conoce a nuestros barberos
           </h2>
           <p className="text-slate-400 max-w-xl mx-auto">
-            Our team of skilled professionals brings years of experience and passion
-            to every appointment.
+            Profesionales con experiencia, técnica y atención genuina en cada cita.
           </p>
         </motion.div>
 
@@ -74,7 +73,7 @@ export function Team({ barbers }: TeamProps) {
                       {barber.bio}
                     </p>
                     <span className="inline-flex items-center gap-1 text-xs text-brand-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                      View Profile <ArrowRight className="w-3 h-3" />
+                      Ver perfil <ArrowRight className="w-3 h-3" />
                     </span>
                   </Card>
                 </Link>

@@ -5,51 +5,51 @@ import { Card } from '../ui/Card';
 const services = [
   {
     icon: Scissors,
-    name: 'Classic Haircut',
-    description: 'Traditional cut with modern precision. Includes consultation and styling.',
-    price: 35,
+    name: 'Corte clásico',
+    description: 'Corte tradicional con precisión moderna. Incluye asesoría y peinado.',
+    price: 350,
     duration: '30 min',
   },
   {
     icon: Sparkles,
-    name: 'Signature Fade',
-    description: 'Precision skin or taper fade with detailed line work and edge-up.',
-    price: 45,
+    name: 'Fade signature',
+    description: 'Desvanecido de precisión con contornos limpios y acabado detallado.',
+    price: 450,
     duration: '45 min',
   },
   {
     icon: Droplets,
-    name: 'Beard Trim & Shape',
-    description: 'Expert beard trimming, shaping, and conditioning with hot towel.',
-    price: 25,
+    name: 'Perfilado de barba',
+    description: 'Recorte, diseño y acondicionamiento de barba con toalla caliente.',
+    price: 280,
     duration: '20 min',
   },
   {
     icon: Crown,
-    name: 'Hot Towel Shave',
-    description: 'Luxurious straight razor shave with premium cream and aftershave.',
-    price: 40,
+    name: 'Afeitado tradicional',
+    description: 'Afeitado con navaja, toalla caliente y productos de cuidado premium.',
+    price: 380,
     duration: '40 min',
   },
   {
     icon: Scissors,
-    name: 'Haircut + Beard Combo',
-    description: 'Complete grooming: precision haircut combined with beard trim.',
-    price: 55,
+    name: 'Corte + barba',
+    description: 'Servicio completo con corte de precisión y diseño profesional de barba.',
+    price: 550,
     duration: '50 min',
   },
   {
     icon: Crown,
-    name: 'The Premium Experience',
-    description: 'Our signature: haircut, shave, beard grooming, scalp massage, styling.',
-    price: 85,
+    name: 'Experiencia premium',
+    description: 'Corte, afeitado, cuidado de barba, masaje capilar y peinado final.',
+    price: 850,
     duration: '1h 15min',
   },
 ];
 
 export function Services() {
   return (
-    <section className="py-24 bg-slate-900/50">
+    <section id="services" className="py-24 bg-slate-900/50">
       <div className="section-container">
         {/* Section header */}
         <motion.div
@@ -60,14 +60,14 @@ export function Services() {
           className="text-center mb-16"
         >
           <span className="text-brand-400 text-sm font-medium tracking-widest uppercase">
-            Our Services
+            Nuestros servicios
           </span>
           <h2 className="text-3xl sm:text-4xl font-display font-bold text-white mt-3 mb-4">
-            Crafted for the Modern Gentleman
+            Precisión, cuidado y estilo
           </h2>
           <p className="text-slate-400 max-w-xl mx-auto">
-            From classic cuts to premium grooming experiences, every service is
-            delivered with precision and care.
+            Desde un corte clásico hasta una experiencia completa, cada servicio
+            está pensado para que salgas sintiéndote mejor.
           </p>
         </motion.div>
 

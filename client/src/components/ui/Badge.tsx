@@ -5,10 +5,10 @@ interface BadgeProps {
 }
 
 const statusConfig: Record<AppointmentStatus, { label: string; className: string }> = {
-  confirmed: { label: 'Confirmed', className: 'badge-confirmed' },
-  pending: { label: 'Pending', className: 'badge-pending' },
-  cancelled: { label: 'Cancelled', className: 'badge-cancelled' },
-  completed: { label: 'Completed', className: 'badge-completed' },
+  confirmed: { label: 'Confirmada', className: 'badge-confirmed' },
+  pending: { label: 'Pendiente', className: 'badge-pending' },
+  cancelled: { label: 'Cancelada', className: 'badge-cancelled' },
+  completed: { label: 'Completada', className: 'badge-completed' },
 };
 
 export function Badge({ status }: BadgeProps) {

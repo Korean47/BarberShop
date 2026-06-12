@@ -13,13 +13,13 @@ export function Contact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.message) {
-      toast.error('Please fill in all fields');
+      toast.error('Completa todos los campos');
       return;
     }
     setSending(true);
     // Simulate send
     await new Promise((r) => setTimeout(r, 1000));
-    toast.success('Message sent! (Note: This is a demo app, no actual email was sent.)');
+    toast.success('Mensaje enviado en esta demostración');
     setForm({ name: '', email: '', message: '' });
     setSending(false);
   };
@@ -32,13 +32,13 @@ export function Contact() {
         className="text-center mb-12"
       >
         <span className="text-brand-400 text-sm font-medium tracking-widest uppercase">
-          Contact
+          Contacto
         </span>
         <h1 className="text-3xl sm:text-4xl font-display font-bold text-white mt-3 mb-4">
-          Get in Touch
+          Estamos para atenderte
         </h1>
         <p className="text-slate-400 max-w-lg mx-auto">
-          Have a question or want to book a custom session? Drop us a message.
+          ¿Tienes una pregunta o necesitas un servicio especial? Escríbenos.
         </p>
       </motion.div>
 
@@ -53,13 +53,13 @@ export function Contact() {
           <div className="glass-card p-6">
             <form onSubmit={handleSubmit} className="space-y-5">
               <Input
-                label="Name"
-                placeholder="Your name"
+                label="Nombre"
+                placeholder="Tu nombre"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
               <Input
-                label="Email"
+                label="Correo electrónico"
                 type="email"
                 placeholder="you@example.com"
                 value={form.email}
@@ -67,11 +67,11 @@ export function Contact() {
               />
               <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-slate-300">
-                  Message
+                  Mensaje
                 </label>
                 <textarea
                   rows={5}
-                  placeholder="How can we help?"
+                  placeholder="¿Cómo podemos ayudarte?"
                   value={form.message}
                   onChange={(e) => setForm({ ...form, message: e.target.value })}
                   className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200 resize-none"
@@ -79,7 +79,7 @@ export function Contact() {
               </div>
               <Button type="submit" loading={sending} className="w-full justify-center">
                 <Send className="w-4 h-4" />
-                Send Message
+                Enviar mensaje
               </Button>
             </form>
           </div>
@@ -97,8 +97,8 @@ export function Contact() {
               <MapPin className="w-5 h-5 text-brand-400" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white mb-1">Location</h3>
-              <p className="text-sm text-slate-400">123 Barber Street<br />Downtown, NY 10001</p>
+              <h3 className="text-sm font-semibold text-white mb-1">Ubicación</h3>
+              <p className="text-sm text-slate-400">Blvd. Morelos 123<br />Hermosillo, Sonora</p>
             </div>
           </Card>
 
@@ -107,8 +107,8 @@ export function Contact() {
               <Phone className="w-5 h-5 text-brand-400" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white mb-1">Phone</h3>
-              <p className="text-sm text-slate-400">(555) 123-4567</p>
+              <h3 className="text-sm font-semibold text-white mb-1">Teléfono</h3>
+              <p className="text-sm text-slate-400">(662) 123 4567</p>
             </div>
           </Card>
 
@@ -117,8 +117,8 @@ export function Contact() {
               <Mail className="w-5 h-5 text-brand-400" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white mb-1">Email</h3>
-              <p className="text-sm text-slate-400">hello@blades.com</p>
+              <h3 className="text-sm font-semibold text-white mb-1">Correo</h3>
+              <p className="text-sm text-slate-400">hola@blades.mx</p>
             </div>
           </Card>
 
@@ -127,12 +127,12 @@ export function Contact() {
               <Clock className="w-5 h-5 text-brand-400" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white mb-1">Hours</h3>
+              <h3 className="text-sm font-semibold text-white mb-1">Horario</h3>
               <div className="text-sm text-slate-400 space-y-0.5">
-                <p>Mon–Wed: 9am – 6pm</p>
-                <p>Thu–Fri: 9am – 8pm</p>
-                <p>Sat: 9am – 5pm</p>
-                <p>Sun: Closed</p>
+                <p>Lun–Mié: 9:00 – 18:00</p>
+                <p>Jue–Vie: 9:00 – 20:00</p>
+                <p>Sáb: 9:00 – 17:00</p>
+                <p>Dom: Cerrado</p>
               </div>
             </div>
           </Card>

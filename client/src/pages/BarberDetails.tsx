@@ -15,6 +15,7 @@ export function BarberDetails() {
 
   useEffect(() => {
     if (!id) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     getBarber(id)
       .then(setBarber)
@@ -26,9 +27,9 @@ export function BarberDetails() {
   if (!barber) {
     return (
       <div className="section-container py-20 text-center">
-        <h2 className="text-2xl font-bold text-white mb-4">Barber not found</h2>
+        <h2 className="text-2xl font-bold text-white mb-4">No encontramos este barbero</h2>
         <Link to="/">
-          <Button variant="outline">Back to Home</Button>
+          <Button variant="outline">Volver al inicio</Button>
         </Link>
       </div>
     );
@@ -46,7 +47,7 @@ export function BarberDetails() {
         className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-8 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to Home
+        Volver al inicio
       </Link>
 
       <motion.div
@@ -79,7 +80,7 @@ export function BarberDetails() {
             </div>
             <Link to={`/book?barber=${barber.id}`}>
               <Button className="w-full justify-center mt-2">
-                Book with {barber.name.split(' ')[0]}
+                Agendar con {barber.name.split(' ')[0]}
               </Button>
             </Link>
           </div>
@@ -89,7 +90,7 @@ export function BarberDetails() {
         <div className="lg:col-span-2 space-y-6">
           {/* Bio */}
           <div className="glass-card p-6">
-            <h2 className="text-lg font-semibold text-white mb-3">About</h2>
+            <h2 className="text-lg font-semibold text-white mb-3">Acerca de</h2>
             <p className="text-slate-300 leading-relaxed">{barber.bio}</p>
           </div>
 
@@ -97,7 +98,7 @@ export function BarberDetails() {
           <div className="glass-card p-6">
             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <Clock className="w-5 h-5 text-brand-400" />
-              Work Schedule
+              Horario de trabajo
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {days.map((day) => {
@@ -113,7 +114,7 @@ export function BarberDetails() {
                       {capitalize(day)}
                     </span>
                     <span className={`text-sm ${hours ? 'text-brand-400' : 'text-slate-600'}`}>
-                      {hours ? `${hours.start} – ${hours.end}` : 'Day Off'}
+                      {hours ? `${hours.start} – ${hours.end}` : 'Descanso'}
                     </span>
                   </div>
                 );
@@ -125,11 +126,11 @@ export function BarberDetails() {
           <div className="glass-card p-6">
             <h2 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
               <MapPin className="w-5 h-5 text-brand-400" />
-              Contact
+              Contacto
             </h2>
             <div className="space-y-2 text-sm text-slate-400">
-              <p>Email: {barber.email}</p>
-              <p>Phone: {barber.phone}</p>
+              <p>Correo: {barber.email}</p>
+              <p>Teléfono: {barber.phone}</p>
             </div>
           </div>
         </div>
