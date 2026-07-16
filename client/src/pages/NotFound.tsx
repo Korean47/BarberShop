@@ -1,36 +1,10 @@
+import { ArrowLeft, Scissors } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Scissors, Home } from 'lucide-react';
-import { Button } from '../components/ui/Button';
 
 export function NotFound() {
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center"
-      >
-        {/* Icon */}
-        <div className="w-24 h-24 mx-auto mb-8 rounded-3xl bg-slate-800 flex items-center justify-center">
-          <Scissors className="w-12 h-12 text-slate-600" />
-        </div>
-
-        {/* 404 */}
-        <h1 className="text-7xl font-display font-bold text-gradient mb-4">404</h1>
-        <h2 className="text-xl font-semibold text-white mb-3">Page Not Found</h2>
-        <p className="text-slate-400 max-w-md mx-auto mb-8">
-          Looks like this page got a little too much off the top.
-          Let's get you back to familiar territory.
-        </p>
-
-        <Link to="/">
-          <Button size="lg">
-            <Home className="w-4 h-4" />
-            Back to Home
-          </Button>
-        </Link>
-      </motion.div>
+    <div className="section-container grid min-h-[70vh] place-items-center py-20 text-center">
+      <div><span className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-[var(--brand-dark)] text-[var(--brand-soft)]"><Scissors className="h-8 w-8" /></span><p className="mt-7 text-xs font-bold uppercase tracking-[.25em] text-[var(--brand)]">Error 404</p><h1 className="mt-3 font-display text-5xl font-semibold">Esta página tomó otro camino.</h1><p className="mx-auto mt-4 max-w-md text-[#657069]">El enlace puede estar vencido o la dirección no existe.</p><Link to="/" className="mt-7 inline-flex items-center gap-2 rounded-full bg-[var(--brand-dark)] px-6 py-3 font-semibold text-white"><ArrowLeft className="h-4 w-4" /> Volver al inicio</Link></div>
     </div>
   );
 }

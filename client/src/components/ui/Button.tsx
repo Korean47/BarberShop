@@ -1,61 +1,30 @@
-import React from 'react';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { Loader2 } from 'lucide-react';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
 }
 
 const variants = {
-  primary:
-    'bg-gradient-to-r from-brand-500 to-brand-600 text-white hover:from-brand-600 hover:to-brand-700 shadow-lg shadow-brand-500/25',
-  secondary:
-    'bg-slate-700 text-slate-200 hover:bg-slate-600 border border-slate-600',
-  outline:
-    'bg-transparent border border-brand-500/50 text-brand-400 hover:bg-brand-500/10',
-  ghost:
-    'bg-transparent text-slate-300 hover:bg-white/5 hover:text-white',
-  danger:
-    'bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30',
+  primary: 'bg-[var(--brand-dark)] text-white shadow-sm hover:brightness-110 hover:shadow-lg',
+  secondary: 'bg-[#e9e2d6] text-[#17211d] hover:bg-[#ded4c5]',
+  outline: 'border border-[#17211d]/20 bg-transparent text-[#17211d] hover:bg-[#17211d]/5',
+  ghost: 'bg-transparent text-current hover:bg-black/5',
+  danger: 'border border-red-600/20 bg-red-50 text-red-700 hover:bg-red-100',
 };
+const sizes = { sm: 'min-h-9 px-3 text-sm', md: 'min-h-11 px-5 text-sm', lg: 'min-h-12 px-6 text-base' };
 
-const sizes = {
-  sm: 'px-3 py-1.5 text-sm rounded-lg',
-  md: 'px-5 py-2.5 text-sm rounded-xl',
-  lg: 'px-7 py-3 text-base rounded-xl',
-};
-
-export function Button({
-  variant = 'primary',
-  size = 'md',
-  loading = false,
-  icon,
-  children,
-  className = '',
-  disabled,
-  ...props
-}: ButtonProps) {
+export function Button({ variant = 'primary', size = 'md', loading = false, icon, children, className = '', disabled, ...props }: ButtonProps) {
   return (
     <button
-      className={`
-        inline-flex items-center justify-center gap-2 font-medium
-        transition-all duration-200 ease-out
-        disabled:opacity-50 disabled:cursor-not-allowed
-        active:scale-[0.98]
-        ${variants[variant]}
-        ${sizes[size]}
-        ${className}
-      `}
+      className={`inline-flex items-center justify-center gap-2 rounded-full font-semibold transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[.98] ${variants[variant]} ${sizes[size]} ${className}`}
       disabled={disabled || loading}
       {...props}
     >
-      {loading ? (
-        <Loader2 className="w-4 h-4 animate-spin" />
-      ) : icon ? (
-        <span className="w-4 h-4">{icon}</span>
-      ) : null}
+      {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : icon}
       {children}
     </button>
   );

@@ -9,6 +9,9 @@ const statusConfig: Record<AppointmentStatus, { label: string; className: string
   pending: { label: 'Pendiente', className: 'badge-pending' },
   cancelled: { label: 'Cancelada', className: 'badge-cancelled' },
   completed: { label: 'Completada', className: 'badge-completed' },
+  checked_in: { label: 'En recepción', className: 'badge-confirmed' },
+  in_progress: { label: 'En servicio', className: 'badge-pending' },
+  no_show: { label: 'No asistió', className: 'badge-cancelled' },
 };
 
 export function Badge({ status }: BadgeProps) {

@@ -1,10 +1,13 @@
 import { useState } from 'react';
+import type { CSSProperties } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import {
   CalendarDays,
+  CreditCard,
   ChevronLeft,
   FileText,
   LayoutDashboard,
+  LogOut,
   Menu,
   Package,
   Scissors,
@@ -13,6 +16,7 @@ import {
   WalletCards,
   X,
 } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 const navigation = [
   { to: '/admin', label: 'Resumen', icon: LayoutDashboard },
@@ -23,6 +27,7 @@ const navigation = [
   { to: '/admin/inventory', label: 'Inventario', icon: Package },
   { to: '/admin/documents', label: 'Documentos', icon: FileText },
   { to: '/admin/settings', label: 'Configuración', icon: Settings },
+  { to: '/admin/billing', label: 'Suscripción', icon: CreditCard },
 ];
 
 const pageNames: Record<string, string> = {
@@ -34,9 +39,11 @@ const pageNames: Record<string, string> = {
   '/admin/inventory': 'Inventario',
   '/admin/documents': 'Documentos',
   '/admin/settings': 'Configuración',
+  '/admin/billing': 'Suscripción y facturación',
 };
 
 export function AdminLayout() {
+  const { session, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
@@ -88,9 +95,12 @@ export function AdminLayout() {
               AR
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-medium text-white">Alejandro Ruiz</p>
+              <p className="truncate text-xs font-medium text-white">{session?.user.name}</p>
               <p className="text-[10px] text-slate-500">Administrador</p>
             </div>
+            <button type="button" onClick={() => void logout()} className="rounded-lg p-2 text-slate-500 hover:bg-white/5 hover:text-white" aria-label="Cerrar sesión">
+              <LogOut className="h-4 w-4" />
+            </button>
           </div>
         )}
         {!mobile && (
@@ -107,7 +117,7 @@ export function AdminLayout() {
   );
 
   return (
-    <div className="flex min-h-screen bg-[#0a101c]">
+    <div className="flex min-h-screen bg-[#0a101c]" style={{ '--brand': '#d39a5c', '--brand-dark': '#b7793f' } as CSSProperties}>
       <aside className={`hidden shrink-0 flex-col border-r border-white/5 bg-[#0c1322] transition-[width] duration-300 lg:flex ${collapsed ? 'w-[72px]' : 'w-64'}`}>
         {navContent()}
       </aside>
@@ -150,6 +160,12 @@ export function AdminLayout() {
             </Link>
           </div>
         </header>
+        {session?.tenant?.subscriptionStatus && !['ACTIVE', 'TRIAL', 'GRACE'].includes(session.tenant.subscriptionStatus) && (
+          <div className="border-b border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-200 lg:px-8">
+            La operación está pausada por facturación. Puedes reactivar el servicio desde{' '}
+            <Link to="/admin/billing" className="font-bold underline">Suscripción</Link>.
+          </div>
+        )}
         <main className="p-4 lg:p-8">
           <Outlet />
         </main>

@@ -1,30 +1,23 @@
-import express from 'express';
-import cors from 'cors';
-import { barberRoutes } from './routes/barbers.js';
-import { serviceRoutes } from './routes/services.js';
-import { appointmentRoutes } from './routes/appointments.js';
-import { errorHandler } from './middleware/errorHandler.js';
+import { createServer } from 'node:http';
+import { createApp } from './app.js';
+import { env } from './config/env.js';
+import { prisma } from './utils/prisma.js';
+import { logger } from './shared/logger.js';
 
-const app = express();
-const PORT = process.env.PORT || 3001;
+const server = createServer(createApp());
 
-// Middleware
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
-app.use(express.json());
-
-// Routes
-app.use('/api/barbers', barberRoutes);
-app.use('/api/services', serviceRoutes);
-app.use('/api/appointments', appointmentRoutes);
-
-// Health check
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+server.listen(env.PORT, () => {
+  logger.info('API listening', { port: env.PORT, environment: env.NODE_ENV });
 });
 
-// Error handler (must be last)
-app.use(errorHandler);
+async function shutdown(signal: string) {
+  logger.info('Shutting down', { signal });
+  server.close(async () => {
+    await prisma.$disconnect();
+    process.exit(0);
+  });
+  setTimeout(() => process.exit(1), 10_000).unref();
+}
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+process.on('SIGTERM', () => void shutdown('SIGTERM'));
+process.on('SIGINT', () => void shutdown('SIGINT'));

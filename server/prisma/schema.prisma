@@ -1,66 +1,621 @@
-// Prisma schema for barbershop appointment system
-// Using SQLite for development — switch datasource to postgresql for production
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model Barber {
-  id           String        @id @default(cuid())
-  name         String
-  email        String        @unique
-  phone        String
-  photo        String        // URL or path to photo
-  bio          String
-  specialties  String        // JSON array stored as string
-  workSchedule String        // JSON object stored as string: { "monday": { "start": "09:00", "end": "18:00" }, ... }
-  isActive     Boolean       @default(true)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  appointments Appointment[]
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
 }
 
-model Service {
-  id           String        @id @default(cuid())
-  name         String
-  description  String
-  duration     Int           // Duration in minutes
-  price        Float
-  category     String        @default("general")
-  isActive     Boolean       @default(true)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  GRACE
+  SUSPENDED
+  CANCELLED
+  EXPIRED
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentMethod {
+  CASH
+  ONLINE
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  PAID
+  FAILED
+  CANCELLED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  WHATSAPP
+}
+
+enum NotificationStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+  CANCELLED
+}
+
+model Tenant {
+  id                String                 @id @default(uuid()) @db.Uuid
+  slug              String                 @unique @db.VarChar(80)
+  name              String                 @db.VarChar(160)
+  legalName         String?                @db.VarChar(200)
+  status            TenantStatus           @default(ACTIVE)
+  timezone          String                 @default("America/Hermosillo") @db.VarChar(80)
+  currency          String                 @default("MXN") @db.Char(3)
+  locale            String                 @default("es-MX") @db.VarChar(12)
+  contactEmail      String?                @db.VarChar(254)
+  contactPhone      String?                @db.VarChar(32)
+  createdAt         DateTime               @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime               @updatedAt @db.Timestamptz(3)
+  domains           TenantDomain[]
+  locations         Location[]
+  branding          TenantBranding?
+  settings          TenantSetting[]
+  subscription      Subscription?
+  users             InternalUser[]
+  roles             Role[]
+  barbers           BarberProfile[]
+  specialties       BarberSpecialty[]
+  customers         Customer[]
+  serviceCategories ServiceCategory[]
+  services          Service[]
+  appointments      Appointment[]
+  payments          Payment[]
+  notifications     Notification[]
+  templates         NotificationTemplate[]
+  auditLogs         AuditLog[]
+  externalEvents    ExternalEvent[]
+
+  @@index([status])
+}
+
+model TenantDomain {
+  id         String    @id @default(uuid()) @db.Uuid
+  tenantId   String    @db.Uuid
+  hostname   String    @unique @db.VarChar(253)
+  isPrimary  Boolean   @default(false)
+  verifiedAt DateTime? @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @db.Timestamptz(3)
+  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+}
+
+model TenantBranding {
+  tenantId        String    @id @db.Uuid
+  logoUrl         String?   @db.VarChar(500)
+  heroImageUrl    String?   @db.VarChar(500)
+  primaryColor    String    @default("#c58b45") @db.Char(7)
+  secondaryColor  String    @default("#17211d") @db.Char(7)
+  accentColor     String    @default("#f0d3a7") @db.Char(7)
+  backgroundColor String    @default("#f6f2ea") @db.Char(7)
+  fontFamily      String    @default("Inter") @db.VarChar(80)
+  publishedAt     DateTime? @db.Timestamptz(3)
+  updatedAt       DateTime  @updatedAt @db.Timestamptz(3)
+  tenant          Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+model TenantSetting {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @db.Uuid
+  key       String   @db.VarChar(100)
+  value     String   @db.Text
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, key])
+}
+
+model Location {
+  id                String             @id @default(uuid()) @db.Uuid
+  tenantId          String             @db.Uuid
+  name              String             @db.VarChar(140)
+  slug              String             @db.VarChar(80)
+  addressLine1      String             @db.VarChar(200)
+  addressLine2      String?            @db.VarChar(200)
+  city              String             @db.VarChar(120)
+  state             String             @db.VarChar(120)
+  postalCode        String?            @db.VarChar(20)
+  countryCode       String             @default("MX") @db.Char(2)
+  phone             String?            @db.VarChar(32)
+  isDefault         Boolean            @default(false)
+  isActive          Boolean            @default(true)
+  createdAt         DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime           @updatedAt @db.Timestamptz(3)
+  tenant            Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  businessSchedules BusinessSchedule[]
+  barberSchedules   BarberSchedule[]
+  appointments      Appointment[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId, isActive])
+}
+
+model SubscriptionPlan {
+  id            String         @id @default(uuid()) @db.Uuid
+  key           String         @unique @db.VarChar(60)
+  name          String         @db.VarChar(120)
+  description   String?        @db.Text
+  priceCents    Int
+  currency      String         @default("MXN") @db.Char(3)
+  billingPeriod String         @default("month") @db.VarChar(20)
+  graceDays     Int            @default(5)
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime       @updatedAt @db.Timestamptz(3)
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id                     String              @id @default(uuid()) @db.Uuid
+  tenantId               String              @unique @db.Uuid
+  planId                 String              @db.Uuid
+  status                 SubscriptionStatus  @default(TRIAL)
+  provider               String              @db.VarChar(40)
+  providerCustomerId     String?             @db.VarChar(190)
+  providerSubscriptionId String?             @unique @db.VarChar(190)
+  currentPeriodStart     DateTime?           @db.Timestamptz(3)
+  currentPeriodEnd       DateTime?           @db.Timestamptz(3)
+  graceEndsAt            DateTime?           @db.Timestamptz(3)
+  cancelAtPeriodEnd      Boolean             @default(false)
+  createdAt              DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt              DateTime            @updatedAt @db.Timestamptz(3)
+  tenant                 Tenant              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  plan                   SubscriptionPlan    @relation(fields: [planId], references: [id], onDelete: Restrict)
+  events                 SubscriptionEvent[]
+
+  @@index([status, currentPeriodEnd])
+}
+
+model SubscriptionEvent {
+  id              String              @id @default(uuid()) @db.Uuid
+  subscriptionId  String              @db.Uuid
+  externalEventId String?             @db.VarChar(190)
+  type            String              @db.VarChar(100)
+  previousStatus  SubscriptionStatus?
+  nextStatus      SubscriptionStatus?
+  occurredAt      DateTime            @default(now()) @db.Timestamptz(3)
+  correlationId   String?             @db.VarChar(80)
+  subscription    Subscription        @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@unique([subscriptionId, externalEventId])
+  @@index([subscriptionId, occurredAt])
+}
+
+model InternalUser {
+  id                String         @id @default(uuid()) @db.Uuid
+  tenantId          String?        @db.Uuid
+  email             String         @db.VarChar(254)
+  name              String         @db.VarChar(160)
+  passwordHash      String         @db.VarChar(255)
+  isPlatformAdmin   Boolean        @default(false)
+  isActive          Boolean        @default(true)
+  failedLoginCount  Int            @default(0)
+  lockedUntil       DateTime?      @db.Timestamptz(3)
+  passwordChangedAt DateTime       @default(now()) @db.Timestamptz(3)
+  lastLoginAt       DateTime?      @db.Timestamptz(3)
+  createdAt         DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime       @updatedAt @db.Timestamptz(3)
+  tenant            Tenant?        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  roles             UserRole[]
+  barberProfile     BarberProfile?
+  auditLogs         AuditLog[]     @relation("AuditActor")
+
+  @@unique([tenantId, email])
+  @@index([email, isActive])
+}
+
+model Role {
+  id          String           @id @default(uuid()) @db.Uuid
+  tenantId    String?          @db.Uuid
+  key         String           @db.VarChar(80)
+  name        String           @db.VarChar(120)
+  description String?          @db.Text
+  isSystem    Boolean          @default(false)
+  tenant      Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  permissions RolePermission[]
+  users       UserRole[]
+
+  @@unique([tenantId, key])
+}
+
+model Permission {
+  id          String           @id @default(uuid()) @db.Uuid
+  key         String           @unique @db.VarChar(100)
+  description String           @db.VarChar(240)
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  roleId       String     @db.Uuid
+  permissionId String     @db.Uuid
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model UserRole {
+  userId     String       @db.Uuid
+  roleId     String       @db.Uuid
+  assignedAt DateTime     @default(now()) @db.Timestamptz(3)
+  user       InternalUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       Role         @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model BarberProfile {
+  id           String                      @id @default(uuid()) @db.Uuid
+  tenantId     String                      @db.Uuid
+  userId       String?                     @unique @db.Uuid
+  displayName  String                      @db.VarChar(160)
+  email        String?                     @db.VarChar(254)
+  phone        String?                     @db.VarChar(32)
+  photoUrl     String?                     @db.VarChar(500)
+  bio          String?                     @db.Text
+  isActive     Boolean                     @default(true)
+  createdAt    DateTime                    @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime                    @updatedAt @db.Timestamptz(3)
+  tenant       Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user         InternalUser?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+  specialties  BarberSpecialtyAssignment[]
+  services     BarberService[]
+  schedules    BarberSchedule[]
+  timeOff      TimeOff[]
   appointments Appointment[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId, isActive])
+}
+
+model BarberSpecialty {
+  id       String                      @id @default(uuid()) @db.Uuid
+  tenantId String                      @db.Uuid
+  name     String                      @db.VarChar(100)
+  tenant   Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  barbers  BarberSpecialtyAssignment[]
+
+  @@unique([tenantId, name])
+}
+
+model BarberSpecialtyAssignment {
+  barberId    String          @db.Uuid
+  specialtyId String          @db.Uuid
+  barber      BarberProfile   @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  specialty   BarberSpecialty @relation(fields: [specialtyId], references: [id], onDelete: Cascade)
+
+  @@id([barberId, specialtyId])
 }
 
 model Customer {
-  id           String        @id @default(cuid())
-  name         String
-  email        String        @unique
-  phone        String
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  appointments Appointment[]
+  id               String        @id @default(uuid()) @db.Uuid
+  tenantId         String        @db.Uuid
+  name             String        @db.VarChar(160)
+  email            String?       @db.VarChar(254)
+  phone            String        @db.VarChar(32)
+  consentedAt      DateTime      @db.Timestamptz(3)
+  marketingOptInAt DateTime?     @db.Timestamptz(3)
+  anonymizedAt     DateTime?     @db.Timestamptz(3)
+  createdAt        DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime      @updatedAt @db.Timestamptz(3)
+  tenant           Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  appointments     Appointment[]
+
+  @@unique([tenantId, phone])
+  @@index([tenantId, email])
+}
+
+model ServiceCategory {
+  id        String    @id @default(uuid()) @db.Uuid
+  tenantId  String    @db.Uuid
+  name      String    @db.VarChar(120)
+  sortOrder Int       @default(0)
+  isActive  Boolean   @default(true)
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  services  Service[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId, sortOrder])
+}
+
+model Service {
+  id                  String               @id @default(uuid()) @db.Uuid
+  tenantId            String               @db.Uuid
+  categoryId          String               @db.Uuid
+  name                String               @db.VarChar(140)
+  description         String               @db.Text
+  imageUrl            String?              @db.VarChar(500)
+  durationMinutes     Int
+  bufferBeforeMinutes Int                  @default(0)
+  bufferAfterMinutes  Int                  @default(0)
+  priceCents          Int
+  isActive            Boolean              @default(true)
+  sortOrder           Int                  @default(0)
+  createdAt           DateTime             @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime             @updatedAt @db.Timestamptz(3)
+  tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  category            ServiceCategory      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  barbers             BarberService[]
+  appointmentServices AppointmentService[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId, isActive, sortOrder])
+}
+
+model BarberService {
+  barberId  String        @db.Uuid
+  serviceId String        @db.Uuid
+  barber    BarberProfile @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  service   Service       @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([barberId, serviceId])
+}
+
+model BusinessSchedule {
+  id          String   @id @default(uuid()) @db.Uuid
+  locationId  String   @db.Uuid
+  dayOfWeek   Int
+  startMinute Int
+  endMinute   Int
+  isOpen      Boolean  @default(true)
+  location    Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([locationId, dayOfWeek])
+}
+
+model BarberSchedule {
+  id          String          @id @default(uuid()) @db.Uuid
+  barberId    String          @db.Uuid
+  locationId  String          @db.Uuid
+  dayOfWeek   Int
+  startMinute Int
+  endMinute   Int
+  isWorking   Boolean         @default(true)
+  barber      BarberProfile   @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  location    Location        @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  breaks      ScheduleBreak[]
+
+  @@unique([barberId, locationId, dayOfWeek])
+  @@index([locationId, dayOfWeek])
+}
+
+model ScheduleBreak {
+  id               String         @id @default(uuid()) @db.Uuid
+  barberScheduleId String         @db.Uuid
+  startMinute      Int
+  endMinute        Int
+  label            String?        @db.VarChar(100)
+  barberSchedule   BarberSchedule @relation(fields: [barberScheduleId], references: [id], onDelete: Cascade)
+
+  @@index([barberScheduleId, startMinute])
+}
+
+model TimeOff {
+  id       String        @id @default(uuid()) @db.Uuid
+  barberId String        @db.Uuid
+  startsAt DateTime      @db.Timestamptz(3)
+  endsAt   DateTime      @db.Timestamptz(3)
+  reason   String?       @db.VarChar(200)
+  barber   BarberProfile @relation(fields: [barberId], references: [id], onDelete: Cascade)
+
+  @@index([barberId, startsAt, endsAt])
 }
 
 model Appointment {
-  id         String   @id @default(cuid())
-  date       DateTime // The date of the appointment
-  startTime  String   // "09:00" format
-  endTime    String   // "09:30" format
-  status     String   @default("confirmed") // confirmed, pending, cancelled, completed
-  notes      String?
-  barberId   String
-  barber     Barber   @relation(fields: [barberId], references: [id])
-  serviceId  String
-  service    Service  @relation(fields: [serviceId], references: [id])
-  customerId String
-  customer   Customer @relation(fields: [customerId], references: [id])
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id                       String                      @id @default(uuid()) @db.Uuid
+  tenantId                 String                      @db.Uuid
+  locationId               String                      @db.Uuid
+  barberId                 String                      @db.Uuid
+  customerId               String                      @db.Uuid
+  startsAt                 DateTime                    @db.Timestamptz(3)
+  endsAt                   DateTime                    @db.Timestamptz(3)
+  status                   AppointmentStatus           @default(PENDING)
+  notes                    String?                     @db.Text
+  totalCents               Int
+  currency                 String                      @db.Char(3)
+  managementTokenHash      String                      @unique @db.Char(64)
+  managementTokenExpiresAt DateTime                    @db.Timestamptz(3)
+  version                  Int                         @default(1)
+  createdAt                DateTime                    @default(now()) @db.Timestamptz(3)
+  updatedAt                DateTime                    @updatedAt @db.Timestamptz(3)
+  tenant                   Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  location                 Location                    @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  barber                   BarberProfile               @relation(fields: [barberId], references: [id], onDelete: Restrict)
+  customer                 Customer                    @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  services                 AppointmentService[]
+  statusHistory            AppointmentStatusHistory[]
+  referenceImages          AppointmentReferenceImage[]
+  payments                 Payment[]
+  notifications            Notification[]
+
+  @@index([tenantId, startsAt])
+  @@index([tenantId, barberId, startsAt, endsAt])
+  @@index([tenantId, customerId, createdAt])
+}
+
+model AppointmentService {
+  id                      String      @id @default(uuid()) @db.Uuid
+  appointmentId           String      @db.Uuid
+  serviceId               String      @db.Uuid
+  serviceNameSnapshot     String      @db.VarChar(140)
+  durationMinutesSnapshot Int
+  priceCentsSnapshot      Int
+  sortOrder               Int         @default(0)
+  appointment             Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  service                 Service     @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
+  @@unique([appointmentId, serviceId])
+}
+
+model AppointmentStatusHistory {
+  id            String             @id @default(uuid()) @db.Uuid
+  appointmentId String             @db.Uuid
+  fromStatus    AppointmentStatus?
+  toStatus      AppointmentStatus
+  changedById   String?            @db.Uuid
+  reason        String?            @db.VarChar(240)
+  changedAt     DateTime           @default(now()) @db.Timestamptz(3)
+  appointment   Appointment        @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@index([appointmentId, changedAt])
+}
+
+model AppointmentReferenceImage {
+  id            String      @id @default(uuid()) @db.Uuid
+  appointmentId String      @db.Uuid
+  storageKey    String      @unique @db.VarChar(500)
+  originalName  String      @db.VarChar(255)
+  mimeType      String      @db.VarChar(80)
+  byteSize      Int
+  width         Int
+  height        Int
+  createdAt     DateTime    @default(now()) @db.Timestamptz(3)
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@index([appointmentId])
+}
+
+model Payment {
+  id                String           @id @default(uuid()) @db.Uuid
+  tenantId          String           @db.Uuid
+  appointmentId     String           @db.Uuid
+  method            PaymentMethod
+  status            PaymentStatus    @default(PENDING)
+  amountCents       Int
+  currency          String           @db.Char(3)
+  provider          String?          @db.VarChar(40)
+  providerPaymentId String?          @unique @db.VarChar(190)
+  paidAt            DateTime?        @db.Timestamptz(3)
+  createdAt         DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime         @updatedAt @db.Timestamptz(3)
+  tenant            Tenant           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  appointment       Appointment      @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+  attempts          PaymentAttempt[]
+  refunds           Refund[]
+
+  @@index([tenantId, createdAt])
+  @@index([appointmentId])
+}
+
+model PaymentAttempt {
+  id             String        @id @default(uuid()) @db.Uuid
+  paymentId      String        @db.Uuid
+  idempotencyKey String        @unique @db.VarChar(190)
+  status         PaymentStatus
+  failureCode    String?       @db.VarChar(100)
+  failureMessage String?       @db.VarChar(240)
+  attemptedAt    DateTime      @default(now()) @db.Timestamptz(3)
+  payment        Payment       @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId, attemptedAt])
+}
+
+model Refund {
+  id               String   @id @default(uuid()) @db.Uuid
+  paymentId        String   @db.Uuid
+  amountCents      Int
+  reason           String?  @db.VarChar(240)
+  providerRefundId String?  @unique @db.VarChar(190)
+  createdAt        DateTime @default(now()) @db.Timestamptz(3)
+  payment          Payment  @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  @@index([paymentId])
+}
+
+model NotificationTemplate {
+  id       String              @id @default(uuid()) @db.Uuid
+  tenantId String              @db.Uuid
+  key      String              @db.VarChar(100)
+  channel  NotificationChannel
+  subject  String?             @db.VarChar(200)
+  body     String              @db.Text
+  isActive Boolean             @default(true)
+  tenant   Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, key, channel])
+}
+
+model Notification {
+  id             String              @id @default(uuid()) @db.Uuid
+  tenantId       String              @db.Uuid
+  appointmentId  String?             @db.Uuid
+  channel        NotificationChannel
+  recipient      String              @db.VarChar(254)
+  templateKey    String              @db.VarChar(100)
+  status         NotificationStatus  @default(PENDING)
+  idempotencyKey String              @unique @db.VarChar(190)
+  scheduledAt    DateTime            @db.Timestamptz(3)
+  sentAt         DateTime?           @db.Timestamptz(3)
+  attemptCount   Int                 @default(0)
+  lastError      String?             @db.VarChar(240)
+  tenant         Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  appointment    Appointment?        @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status, scheduledAt])
+}
+
+model AuditLog {
+  id            String        @id @default(uuid()) @db.Uuid
+  tenantId      String?       @db.Uuid
+  actorId       String?       @db.Uuid
+  action        String        @db.VarChar(100)
+  resourceType  String        @db.VarChar(100)
+  resourceId    String?       @db.VarChar(100)
+  result        String        @db.VarChar(30)
+  correlationId String        @db.VarChar(80)
+  ipAddress     String?       @db.VarChar(64)
+  context       String?       @db.Text
+  occurredAt    DateTime      @default(now()) @db.Timestamptz(3)
+  tenant        Tenant?       @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  actor         InternalUser? @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, occurredAt])
+  @@index([actorId, occurredAt])
+}
+
+model ExternalEvent {
+  id              String    @id @default(uuid()) @db.Uuid
+  tenantId        String?   @db.Uuid
+  provider        String    @db.VarChar(40)
+  externalEventId String    @db.VarChar(190)
+  type            String    @db.VarChar(100)
+  payloadHash     String    @db.Char(64)
+  processedAt     DateTime? @db.Timestamptz(3)
+  failedAt        DateTime? @db.Timestamptz(3)
+  failureReason   String?   @db.VarChar(240)
+  receivedAt      DateTime  @default(now()) @db.Timestamptz(3)
+  tenant          Tenant?   @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+
+  @@unique([provider, externalEventId])
+  @@index([tenantId, receivedAt])
 }

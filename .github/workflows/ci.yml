@@ -1,0 +1,67 @@
+name: Quality and security
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: barbershop
+          POSTGRES_USER: barbershop
+          POSTGRES_PASSWORD: barbershop
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U barbershop -d barbershop"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://barbershop:barbershop@localhost:5432/barbershop?schema=public
+      JWT_SECRET: ci-only-secret-with-at-least-thirty-two-characters
+      PAYMENT_WEBHOOK_SECRET: ci-only-webhook-secret-with-enough-characters
+      PUBLIC_APP_URL: http://localhost:5173
+      ALLOWED_ORIGINS: http://localhost:5173
+      FILE_STORAGE_PROVIDER: local
+      PAYMENT_PROVIDER: mock
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            client/package-lock.json
+            server/package-lock.json
+      - run: npm ci
+      - run: npm ci --prefix client
+      - run: npm ci --prefix server
+      - run: npm --prefix server run prisma:validate
+      - run: npm --prefix server run prisma:generate
+      - run: npm --prefix server run db:migrate
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run build
+      - run: npm run performance:check
+      - run: npm audit --omit=dev --audit-level=high --prefix client
+      - run: npm audit --omit=dev --audit-level=high --prefix server
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
