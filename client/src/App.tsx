@@ -41,8 +41,8 @@ export default function App() {
           <Toaster
             position="top-center"
             toastOptions={{
-              style: { background: '#17211d', color: '#fffdf8', borderRadius: '14px', fontSize: '14px' },
-              success: { iconTheme: { primary: '#d39a5c', secondary: '#17211d' } },
+              style: { background: '#17313a', color: '#ffffff', borderRadius: '12px', fontSize: '14px' },
+              success: { iconTheme: { primary: '#f2c14e', secondary: '#17313a' } },
             }}
           />
           <Suspense fallback={<PageSpinner />}>

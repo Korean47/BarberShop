@@ -17,12 +17,12 @@ const ids = {
 const barbers = [
   {
     id: '10000000-0000-4000-8000-000000000001',
-    displayName: 'Marcus Chen',
-    email: 'marcus@blades.mx',
+    displayName: 'Luis “Lucho” Mendoza',
+    email: 'lucho@blades.mx',
     phone: '+526621010001',
-    photoUrl: '/images/barber-1.png',
-    bio: 'Especialista en fades de precisión y estilos contemporáneos, con más de doce años de experiencia.',
-    specialties: ['Fades de precisión', 'Diseño capilar'],
+    photoUrl: '/images/barber-1.webp',
+    bio: 'Le gusta escuchar primero y cortar después. Se especializa en degradados limpios y estilos fáciles de mantener.',
+    specialties: ['Degradados', 'Diseño capilar'],
     startMinute: 9 * 60,
   },
   {
@@ -30,40 +30,40 @@ const barbers = [
     displayName: 'Diego Ramírez',
     email: 'diego@blades.mx',
     phone: '+526621010002',
-    photoUrl: '/images/barber-2.png',
-    bio: 'Técnica fresca y detallista para texturas, fades y diseño de barba.',
+    photoUrl: '/images/barber-2.webp',
+    bio: 'Paciente y detallista. Trabaja muy bien cabello con textura, cortes actuales y barba.',
     specialties: ['Texturas', 'Diseño de barba'],
     startMinute: 10 * 60,
   },
   {
     id: '10000000-0000-4000-8000-000000000003',
-    displayName: 'Jamal Williams',
-    email: 'jamal@blades.mx',
+    displayName: 'Iván Soto',
+    email: 'ivan@blades.mx',
     phone: '+526621010003',
-    photoUrl: '/images/barber-3.png',
-    bio: 'Barbería clásica con un giro moderno; experto en afeitado y cuidado de barba.',
-    specialties: ['Corte clásico', 'Afeitado tradicional'],
+    photoUrl: '/images/barber-3.webp',
+    bio: 'Hace cortes clásicos, barba y arreglos sencillos que se ven bien desde el primer día.',
+    specialties: ['Corte clásico', 'Barba'],
     startMinute: 9 * 60,
   },
   {
     id: '10000000-0000-4000-8000-000000000004',
-    displayName: 'Tony Moretti',
-    email: 'tony@blades.mx',
+    displayName: 'Toño Valdez',
+    email: 'tono@blades.mx',
     phone: '+526621010004',
-    photoUrl: '/images/barber-4.png',
-    bio: 'Más de veinte años perfeccionando cortes clásicos y rituales de cuidado premium.',
-    specialties: ['Estilo clásico', 'Navaja'],
+    photoUrl: '/images/barber-4.webp',
+    bio: 'Años de experiencia, trato tranquilo y buena mano para adultos, jóvenes y niños.',
+    specialties: ['Corte familiar', 'Tijera'],
     startMinute: 8 * 60,
   },
 ];
 
 const services = [
-  ['20000000-0000-4000-8000-000000000001', 'Corte clásico', 'Corte tradicional con máquina y tijera, asesoría y peinado.', 30, 35000, 'hair'],
-  ['20000000-0000-4000-8000-000000000002', 'Fade signature', 'Desvanecido de precisión con contornos limpios y acabado detallado.', 45, 45000, 'hair'],
-  ['20000000-0000-4000-8000-000000000003', 'Perfilado de barba', 'Recorte, diseño y acondicionamiento con toalla caliente.', 20, 28000, 'beard'],
-  ['20000000-0000-4000-8000-000000000004', 'Afeitado tradicional', 'Afeitado con navaja, toalla caliente y productos de cuidado.', 40, 38000, 'beard'],
-  ['20000000-0000-4000-8000-000000000005', 'Corte + barba', 'Servicio completo con corte de precisión y diseño profesional de barba.', 50, 55000, 'ritual'],
-  ['20000000-0000-4000-8000-000000000006', 'Experiencia premium', 'Corte, afeitado, cuidado de barba, masaje capilar y peinado final.', 75, 85000, 'ritual'],
+  ['20000000-0000-4000-8000-000000000001', 'Corte clásico', 'Máquina y tijera para un corte limpio y fácil de peinar.', 30, 22000, 'hair', '/images/corte-clasico.webp'],
+  ['20000000-0000-4000-8000-000000000002', 'Degradado', 'Desvanecido bajo o medio, contornos limpios y acabado con textura.', 40, 26000, 'hair', '/images/degradado.webp'],
+  ['20000000-0000-4000-8000-000000000003', 'Corte infantil', 'Corte cómodo y con paciencia para niñas y niños de hasta 12 años.', 30, 18000, 'hair', '/images/corte-infantil.webp'],
+  ['20000000-0000-4000-8000-000000000004', 'Barba', 'Recorte, forma y contornos para dejar la barba pareja.', 20, 14000, 'beard', '/images/barba.webp'],
+  ['20000000-0000-4000-8000-000000000005', 'Corte y barba', 'Corte completo más arreglo y contorno de barba.', 50, 29000, 'special', '/images/corte-barba.webp'],
+  ['20000000-0000-4000-8000-000000000006', 'Corte personalizado', 'Trae o sube una referencia. El precio se confirma contigo antes de empezar.', 45, 26000, 'special', '/images/corte-personalizado.webp'],
 ] as const;
 
 async function main() {
@@ -88,7 +88,7 @@ async function main() {
 
   await prisma.tenant.upsert({
     where: { id: ids.tenant },
-    update: {},
+    update: { name: 'Blades Barbería', contactEmail: 'hola@blades.mx', contactPhone: '+526621234567' },
     create: {
       id: ids.tenant,
       slug: 'blades',
@@ -104,15 +104,23 @@ async function main() {
 
   await prisma.tenantBranding.upsert({
     where: { tenantId: ids.tenant },
-    update: {},
+    update: {
+      heroImageUrl: '/images/hero-local.webp',
+      primaryColor: '#0f4c5c',
+      secondaryColor: '#17313a',
+      accentColor: '#f2c14e',
+      backgroundColor: '#f7f4ed',
+      fontFamily: 'Segoe UI',
+      publishedAt: new Date(),
+    },
     create: {
       tenantId: ids.tenant,
-      heroImageUrl: '/images/barbershop-hero.webp',
-      primaryColor: '#b7793f',
-      secondaryColor: '#17211d',
-      accentColor: '#f0d3a7',
-      backgroundColor: '#f5f1e9',
-      fontFamily: 'Inter',
+      heroImageUrl: '/images/hero-local.webp',
+      primaryColor: '#0f4c5c',
+      secondaryColor: '#17313a',
+      accentColor: '#f2c14e',
+      backgroundColor: '#f7f4ed',
+      fontFamily: 'Segoe UI',
       publishedAt: new Date(),
     },
   });
@@ -180,26 +188,27 @@ async function main() {
   const categories = {
     hair: '30000000-0000-4000-8000-000000000001',
     beard: '30000000-0000-4000-8000-000000000002',
-    ritual: '30000000-0000-4000-8000-000000000003',
+    special: '30000000-0000-4000-8000-000000000003',
   };
-  for (const [index, [key, name]] of Object.entries({ hair: 'Cabello', beard: 'Barba', ritual: 'Rituales' }).entries()) {
+  for (const [index, [key, name]] of Object.entries({ hair: 'Cabello', beard: 'Barba', special: 'Especiales' }).entries()) {
     await prisma.serviceCategory.upsert({
       where: { id: categories[key as keyof typeof categories] },
-      update: {},
+      update: { name, sortOrder: index },
       create: { id: categories[key as keyof typeof categories], tenantId: ids.tenant, name, sortOrder: index },
     });
   }
 
-  for (const [index, [id, name, description, durationMinutes, priceCents, category]] of services.entries()) {
+  for (const [index, [id, name, description, durationMinutes, priceCents, category, imageUrl]] of services.entries()) {
     await prisma.service.upsert({
       where: { id },
-      update: { name, description, durationMinutes, priceCents },
+      update: { categoryId: categories[category], name, description, durationMinutes, priceCents, imageUrl, sortOrder: index },
       create: {
         id,
         tenantId: ids.tenant,
         categoryId: categories[category],
         name,
         description,
+        imageUrl,
         durationMinutes,
         priceCents,
         sortOrder: index,
@@ -210,7 +219,7 @@ async function main() {
   for (const barber of barbers) {
     await prisma.barberProfile.upsert({
       where: { id: barber.id },
-      update: {},
+      update: { displayName: barber.displayName, email: barber.email, phone: barber.phone, photoUrl: barber.photoUrl, bio: barber.bio },
       create: {
         id: barber.id,
         tenantId: ids.tenant,
@@ -221,6 +230,7 @@ async function main() {
         bio: barber.bio,
       },
     });
+    await prisma.barberSpecialtyAssignment.deleteMany({ where: { barberId: barber.id } });
     for (const name of barber.specialties) {
       const specialty = await prisma.barberSpecialty.upsert({
         where: { tenantId_name: { tenantId: ids.tenant, name } },

@@ -25,7 +25,7 @@ let initialGzipBytes = 0;
 for (const asset of new Set(assets)) {
   initialGzipBytes += gzipSync(await readFile(path.join(dist, asset))).byteLength;
 }
-const heroBytes = (await stat(path.join(root, 'client', 'public', 'images', 'barbershop-hero.webp'))).size;
+const heroBytes = (await stat(path.join(root, 'client', 'public', 'images', 'hero-local.webp'))).size;
 const limits = { initialGzipBytes: 150 * 1024, heroBytes: 200 * 1024 };
 
 console.info(JSON.stringify({

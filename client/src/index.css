@@ -1,14 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --brand: #b7793f;
-  --brand-dark: #17211d;
-  --brand-soft: #f0d3a7;
-  --surface: #f5f1e9;
+  --brand: #0f4c5c;
+  --brand-dark: #17313a;
+  --brand-soft: #f2c14e;
+  --accent: #e4572e;
+  --surface: #f7f4ed;
   color-scheme: light;
 }
 
@@ -17,34 +16,60 @@
   html { scroll-behavior: smooth; }
   body {
     margin: 0;
-    min-width: 320px;
+    min-width: 0;
     background: var(--surface);
-    color: #17211d;
-    font-family: 'DM Sans', system-ui, sans-serif;
+    color: var(--brand-dark);
+    font-family: "Segoe UI", Arial, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
   button, input, textarea, select { font: inherit; }
-  ::selection { background: var(--brand-soft); color: #17211d; }
-  :focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+  button, a { -webkit-tap-highlight-color: transparent; }
+  img { max-width: 100%; }
+  ::selection { background: var(--brand-soft); color: var(--brand-dark); }
+  :focus-visible { outline: 3px solid var(--brand-soft); outline-offset: 3px; }
 }
 
 @layer components {
   .section-container { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8; }
-  .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  .font-display { font-family: "Segoe UI", Arial, system-ui, sans-serif; }
   .text-balance { text-wrap: balance; }
-  .glass-card { @apply rounded-2xl border border-[#17211d]/10 bg-white/80 shadow-sm backdrop-blur-md; }
-  .glass-card-hover { @apply glass-card transition duration-200 hover:-translate-y-1 hover:shadow-xl; }
-  .admin-card { @apply rounded-2xl border border-white/[0.07] bg-[#101827] shadow-lg shadow-black/5; }
-  .admin-input { @apply block w-full rounded-xl border border-white/10 bg-slate-950/40 px-3.5 py-2.5 text-sm text-slate-200 outline-none transition placeholder:text-slate-600 focus:border-amber-500/60 focus:ring-2 focus:ring-amber-500/10; }
+  .glass-card { @apply rounded-2xl border border-[#17313a]/10 bg-white shadow-sm; }
+  .glass-card-hover { @apply glass-card transition duration-200 hover:-translate-y-0.5 hover:shadow-lg; }
+  .admin-card { @apply rounded-2xl border border-slate-200 bg-white shadow-sm; }
+  .admin-input { @apply block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0f4c5c] focus:ring-4 focus:ring-[#0f4c5c]/10; }
   .badge { @apply inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold; }
-  .badge-confirmed { @apply border-emerald-500/30 bg-emerald-500/10 text-emerald-700; }
-  .badge-pending { @apply border-amber-500/30 bg-amber-500/10 text-amber-700; }
-  .badge-cancelled { @apply border-red-500/30 bg-red-500/10 text-red-700; }
-  .badge-completed { @apply border-blue-500/30 bg-blue-500/10 text-blue-700; }
+  .badge-confirmed { @apply border-emerald-200 bg-emerald-50 text-emerald-800; }
+  .badge-pending { @apply border-amber-200 bg-amber-50 text-amber-800; }
+  .badge-cancelled { @apply border-red-200 bg-red-50 text-red-800; }
+  .badge-completed { @apply border-blue-200 bg-blue-50 text-blue-800; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* Legacy admin screens now inherit the light, practical operations theme. */
+.admin-shell main p[class~="text-white"],
+.admin-shell main h2[class~="text-white"],
+.admin-shell main h3[class~="text-white"],
+.admin-shell main span[class~="text-white"],
+.admin-shell main div[class~="text-white"],
+.admin-shell main td[class~="text-white"] { color: #0f172a !important; }
+.admin-shell main input[class~="text-white"],
+.admin-shell main select[class~="text-white"],
+.admin-shell main textarea[class~="text-white"] { color: #0f172a !important; }
+.admin-shell main [class~="text-slate-200"],
+.admin-shell main [class~="text-slate-300"] { color: #334155 !important; }
+.admin-shell main [class~="text-slate-400"] { color: #475569 !important; }
+.admin-shell main [class~="border-white/5"],
+.admin-shell main [class~="border-white/10"] { border-color: #e2e8f0 !important; }
+.admin-shell main [class~="divide-white/5"] > :not([hidden]) ~ :not([hidden]) { border-color: #e2e8f0 !important; }
+.admin-shell main [class~="bg-slate-800/50"],
+.admin-shell main [class~="bg-slate-800"],
+.admin-shell main [class~="bg-slate-900"] { background-color: #fff !important; }
+.admin-shell main [class~="bg-slate-950/40"],
+.admin-shell main [class~="bg-white/[0.02]"],
+.admin-shell main [class~="bg-white/[0.03]"] { background-color: #f8fafc !important; }
+.admin-shell main [class~="[color-scheme:dark]"] { color-scheme: light !important; }

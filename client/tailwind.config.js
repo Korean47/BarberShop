@@ -4,21 +4,21 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
-        body: ['"DM Sans"', 'system-ui', 'sans-serif'],
+        display: ['"Segoe UI"', 'Arial', 'system-ui', 'sans-serif'],
+        body: ['"Segoe UI"', 'Arial', 'system-ui', 'sans-serif'],
       },
       colors: {
         brand: {
-          50: '#fffbeb',
-          100: '#fef3c7',
-          200: '#fde68a',
-          300: '#fcd34d',
-          400: '#fbbf24',
-          500: '#f59e0b',
-          600: '#d97706',
-          700: '#b45309',
-          800: '#92400e',
-          900: '#78350f',
+          50: '#eef8fa',
+          100: '#d6eef2',
+          200: '#b2dfe6',
+          300: '#7fc8d4',
+          400: '#47a8b9',
+          500: '#278b9e',
+          600: '#1c6f81',
+          700: '#185968',
+          800: '#174957',
+          900: '#173e49',
         },
       },
       animation: {

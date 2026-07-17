@@ -1,48 +1,27 @@
-import { Check, Sparkles, Users } from 'lucide-react';
+import { Check, Users } from 'lucide-react';
 import type { Barber } from '../../types';
 import { parseSpecialties } from '../../utils/helpers';
 
 export type BarberChoice = string | 'any' | null;
 
-export function BarberStep({ barbers, selected, onSelect }: {
-  barbers: Barber[];
-  selected: BarberChoice;
-  onSelect(value: BarberChoice): void;
-}) {
+export function BarberStep({ barbers, selected, onSelect }: { barbers: Barber[]; selected: BarberChoice; onSelect(value: BarberChoice): void }) {
   return (
     <fieldset>
-      <legend className="font-display text-3xl font-semibold text-[#17211d]">Elige quién te atiende</legend>
-      <p className="mt-2 text-sm text-[#657069]">Si eliges “cualquiera”, te mostraremos más horarios.</p>
-      <div className="mt-7 grid gap-3 sm:grid-cols-2">
-        <button
-          type="button"
-          aria-pressed={selected === 'any'}
-          onClick={() => onSelect('any')}
-          className={`relative flex min-h-32 items-center gap-4 rounded-2xl border p-5 text-left transition ${selected === 'any' ? 'border-[var(--brand)] bg-[#fffaf1] shadow-lg' : 'border-[#17211d]/10 bg-white hover:border-[#17211d]/25'}`}
-        >
-          <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-[var(--brand-dark)] text-[var(--brand-soft)]"><Users className="h-7 w-7" /></span>
-          <span>
-            <span className="flex items-center gap-2 font-bold text-[#17211d]">Cualquier barbero <Sparkles className="h-4 w-4 text-[var(--brand)]" /></span>
-            <span className="mt-1 block text-sm leading-5 text-[#657069]">La opción más rápida: asignamos al primer profesional disponible.</span>
-          </span>
-          {selected === 'any' && <Check className="absolute right-4 top-4 h-5 w-5 text-[var(--brand)]" />}
+      <legend className="text-2xl font-black tracking-tight text-[#17313a] sm:text-3xl">¿Quién te atiende?</legend>
+      <p className="mt-2 text-sm text-[#587078]">Con “el primero disponible” normalmente encuentras más horas.</p>
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <button type="button" aria-pressed={selected === 'any'} onClick={() => onSelect('any')} className={`relative flex min-h-24 items-center gap-3 rounded-2xl border-2 p-3.5 text-left transition ${selected === 'any' ? 'border-[var(--accent)] bg-[#fff8ee] shadow-md' : 'border-[#17313a]/10 bg-white hover:border-[var(--brand)]/35'}`}>
+          <span className="grid h-16 w-16 shrink-0 place-items-center rounded-xl bg-[var(--brand)] text-white"><Users className="h-7 w-7" /></span>
+          <span className="pr-5"><span className="block font-black text-[#17313a]">El primero disponible</span><span className="mt-1 block text-xs leading-4 text-[#587078]">La forma más rápida de apartar.</span></span>
+          {selected === 'any' && <Check className="absolute right-3 top-3 h-5 w-5 text-[var(--accent)]" />}
         </button>
         {barbers.map((barber) => {
-          const selectedBarber = selected === barber.id;
+          const isSelected = selected === barber.id;
           return (
-            <button
-              type="button"
-              key={barber.id}
-              aria-pressed={selectedBarber}
-              onClick={() => onSelect(barber.id)}
-              className={`relative flex min-h-32 items-center gap-4 rounded-2xl border p-5 text-left transition ${selectedBarber ? 'border-[var(--brand)] bg-[#fffaf1] shadow-lg' : 'border-[#17211d]/10 bg-white hover:border-[#17211d]/25'}`}
-            >
-              <img src={barber.photo} alt="" className="h-16 w-16 shrink-0 rounded-2xl object-cover" width="64" height="64" loading="lazy" />
-              <span>
-                <span className="font-bold text-[#17211d]">{barber.name}</span>
-                <span className="mt-1 block text-sm text-[#657069]">{parseSpecialties(barber.specialties).slice(0, 2).join(' · ')}</span>
-              </span>
-              {selectedBarber && <Check className="absolute right-4 top-4 h-5 w-5 text-[var(--brand)]" />}
+            <button type="button" key={barber.id} aria-pressed={isSelected} onClick={() => onSelect(barber.id)} className={`relative flex min-h-24 items-center gap-3 rounded-2xl border-2 p-3.5 text-left transition ${isSelected ? 'border-[var(--accent)] bg-[#fff8ee] shadow-md' : 'border-[#17313a]/10 bg-white hover:border-[var(--brand)]/35'}`}>
+              <img src={barber.photo} alt="" className="h-16 w-16 shrink-0 rounded-xl object-cover" width="64" height="64" loading="lazy" />
+              <span className="min-w-0 pr-5"><span className="block truncate font-black text-[#17313a]">{barber.name}</span><span className="mt-1 block line-clamp-2 text-xs leading-4 text-[#587078]">{parseSpecialties(barber.specialties).slice(0, 2).join(' · ')}</span></span>
+              {isSelected && <Check className="absolute right-3 top-3 h-5 w-5 text-[var(--accent)]" />}
             </button>
           );
         })}

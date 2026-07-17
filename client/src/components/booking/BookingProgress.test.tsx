@@ -7,6 +7,6 @@ describe('BookingProgress', () => {
     render(<BookingProgress current={3} />);
     expect(screen.getByRole('navigation', { name: 'Progreso de la reserva' })).toBeInTheDocument();
     expect(screen.getByText('Horario').closest('li')).toHaveAttribute('aria-current', 'step');
-    expect(screen.getByText('Confirmación').closest('li')).not.toHaveAttribute('aria-current');
+    expect(screen.getByText('Tus datos').closest('li')).not.toHaveAttribute('aria-current');
   });
 });

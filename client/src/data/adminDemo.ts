@@ -19,7 +19,7 @@ export const inventoryItems = [
   { id: 'inv-1', name: 'Pomada mate', category: 'Styling', stock: 4, minimum: 8, unit: 'pzas', cost: 145 },
   { id: 'inv-2', name: 'Navajas desechables', category: 'Consumibles', stock: 18, minimum: 20, unit: 'cajas', cost: 92 },
   { id: 'inv-3', name: 'Talco profesional', category: 'Consumibles', stock: 12, minimum: 5, unit: 'pzas', cost: 78 },
-  { id: 'inv-4', name: 'Shampoo premium', category: 'Cuidado', stock: 9, minimum: 6, unit: 'pzas', cost: 210 },
+  { id: 'inv-4', name: 'Shampoo hidratante', category: 'Cuidado', stock: 9, minimum: 6, unit: 'pzas', cost: 210 },
   { id: 'inv-5', name: 'Aceite para barba', category: 'Cuidado', stock: 3, minimum: 7, unit: 'pzas', cost: 168 },
   { id: 'inv-6', name: 'Toallas negras', category: 'Textiles', stock: 28, minimum: 20, unit: 'pzas', cost: 115 },
 ];

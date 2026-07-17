@@ -148,7 +148,7 @@ export function AdminAppointments() {
         }
       />
       {/* Stats cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
           {
             label: 'Citas del día',
@@ -187,12 +187,12 @@ export function AdminAppointments() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
             >
-              <Card className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-xl ${stat.bg} flex items-center justify-center`}>
-                  <Icon className={`w-6 h-6 ${stat.color}`} />
+              <Card className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl sm:h-12 sm:w-12 ${stat.bg}`}>
+                  <Icon className={`h-5 w-5 sm:h-6 sm:w-6 ${stat.color}`} />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-white">{stat.value}</p>
+                  <p className="truncate text-xl font-bold text-white sm:text-2xl">{stat.value}</p>
                   <p className="text-xs text-slate-500">{stat.label}</p>
                 </div>
               </Card>
@@ -203,9 +203,9 @@ export function AdminAppointments() {
 
       {/* Filters bar */}
       <div className="glass-card p-4">
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col gap-3 min-[430px]:flex-row min-[430px]:flex-wrap min-[430px]:items-center">
           {/* Date navigation */}
-          <div className="flex items-center gap-1 bg-slate-800/50 rounded-xl p-1">
+          <div className="flex w-full items-center justify-between gap-1 rounded-xl bg-slate-800/50 p-1 min-[430px]:w-auto">
             <button
               onClick={() => changeDate(-1)}
               className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400"
@@ -214,7 +214,7 @@ export function AdminAppointments() {
             </button>
             <div className="px-3 py-1 text-sm font-medium text-white min-w-[120px] text-center">
               {isToday(new Date(filterDate + 'T00:00:00'))
-                ? 'Today'
+                ? 'Hoy'
                 : formatDateShort(new Date(filterDate + 'T00:00:00'))}
             </div>
             <button
@@ -230,14 +230,14 @@ export function AdminAppointments() {
             type="date"
             value={filterDate}
             onChange={(e) => setFilterDate(e.target.value)}
-            className="bg-slate-800/50 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white [color-scheme:dark]"
+            className="min-h-11 w-full rounded-xl border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm text-white [color-scheme:dark] min-[430px]:w-auto"
           />
 
           {/* Barber filter */}
           <select
             value={filterBarber}
             onChange={(e) => setFilterBarber(e.target.value)}
-            className="bg-slate-800/50 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white [color-scheme:dark]"
+            className="min-h-11 w-full rounded-xl border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm text-white [color-scheme:dark] min-[430px]:w-auto"
           >
             <option value="">Todos los barberos</option>
             {barbers.map((b) => (
@@ -249,7 +249,7 @@ export function AdminAppointments() {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="bg-slate-800/50 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white [color-scheme:dark]"
+            className="min-h-11 w-full rounded-xl border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm text-white [color-scheme:dark] min-[430px]:w-auto"
           >
             <option value="">Todos los estados</option>
             <option value="confirmed">Confirmada</option>
@@ -270,7 +270,7 @@ export function AdminAppointments() {
             </Button>
           )}
 
-          <div className="ml-auto flex gap-1">
+          <div className="flex gap-1 min-[430px]:ml-auto">
             <Button
               variant={view === 'table' ? 'secondary' : 'ghost'}
               size="sm"

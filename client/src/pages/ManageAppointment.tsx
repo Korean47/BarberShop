@@ -73,7 +73,7 @@ export function ManageAppointment() {
 
   if (loading) return <PageSpinner />;
   if (!appointment) {
-    return <div className="section-container py-24 text-center"><ShieldCheck className="mx-auto h-12 w-12 text-[var(--brand)]" /><h1 className="mt-5 font-display text-4xl font-semibold">Este enlace ya no está disponible</h1><p className="mt-3 text-[#657069]">Por seguridad, los enlaces para administrar citas caducan.</p><Link to="/contact" className="mt-7 inline-block font-semibold underline">Contactar a la barbería</Link></div>;
+    return <div className="section-container py-24 text-center"><ShieldCheck className="mx-auto h-12 w-12 text-[var(--brand)]" /><h1 className="mt-5 text-4xl font-black">Este enlace ya no está disponible</h1><p className="mt-3 text-[#587078]">Por seguridad, los enlaces para administrar citas caducan.</p><Link to="/contact" className="mt-7 inline-block font-bold underline">Contactar a la barbería</Link></div>;
   }
 
   const final = ['cancelled', 'completed', 'no_show'].includes(appointment.status);
@@ -83,13 +83,13 @@ export function ManageAppointment() {
         <div className="text-center">
           {appointment.status === 'cancelled' ? <XCircle className="mx-auto h-14 w-14 text-red-600" /> : <CheckCircle2 className="mx-auto h-14 w-14 text-emerald-700" />}
           <p className="mt-5 text-xs font-bold uppercase tracking-[.2em] text-[var(--brand)]">Tu cita</p>
-          <h1 className="mt-2 font-display text-4xl font-semibold">{appointment.status === 'cancelled' ? 'Cita cancelada' : 'Todo listo para tu visita'}</h1>
+          <h1 className="mt-2 text-4xl font-black tracking-tight">{appointment.status === 'cancelled' ? 'Cita cancelada' : 'Todo listo para tu visita'}</h1>
         </div>
-        <div className="mt-8 rounded-[2rem] bg-white p-6 shadow-lg sm:p-8">
+        <div className="mt-8 rounded-2xl border border-[#17313a]/10 bg-white p-6 shadow-md sm:p-8">
           <div className="flex items-center gap-4 border-b border-[#17211d]/10 pb-5">
             <img src={appointment.barber.photo} alt="" className="h-16 w-16 rounded-2xl object-cover" />
             <div><p className="font-bold">{appointment.barber.name}</p><p className="mt-1 text-sm text-[#657069]">{appointment.service.name}</p></div>
-            <p className="ml-auto font-display text-2xl font-semibold">{formatPrice(appointment.totalCents / 100)}</p>
+            <p className="ml-auto text-xl font-black text-[var(--accent)] sm:text-2xl">{formatPrice(appointment.totalCents / 100)}</p>
           </div>
           <div className="grid gap-4 py-6 sm:grid-cols-2">
             <p className="flex items-start gap-3 text-sm"><CalendarDays className="mt-0.5 h-5 w-5 text-[var(--brand)]" /><span><strong className="block">Fecha</strong>{formatDateLong(new Date(appointment.startsAt))}</span></p>
@@ -107,7 +107,7 @@ export function ManageAppointment() {
 
           {rescheduling && (
             <div className="border-t border-[#17211d]/10 pt-6">
-              <h2 className="font-display text-2xl font-semibold">Elige un nuevo horario</h2>
+              <h2 className="text-2xl font-black">Elige un nuevo horario</h2>
               <input type="date" value={date} min={formatDateToAPI(new Date())} onChange={(event) => { setSlot(null); setDate(event.target.value); }} className="mt-4 min-h-12 rounded-xl border border-[#17211d]/15 px-4" />
               <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-5">
                 {availability?.slots.map((item) => <button type="button" key={item.start} aria-pressed={slot?.start === item.start} onClick={() => setSlot(item)} className={`min-h-11 rounded-xl border text-sm font-bold ${slot?.start === item.start ? 'border-[var(--brand)] bg-[var(--brand-soft)]' : 'border-[#17211d]/10'}`}>{formatTime(item.start)}</button>)}

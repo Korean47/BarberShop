@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { rateLimit } from 'express-rate-limit';
+import { ipKeyGenerator, rateLimit } from 'express-rate-limit';
 import { resolveTenant } from '../../middleware/tenant-context.js';
 import { requireOperationalSubscription } from '../../middleware/subscription.js';
 import { validateBody } from '../../middleware/validate.js';
@@ -20,7 +20,7 @@ const bookingLimiter = rateLimit({
   limit: 20,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
-  keyGenerator: (req) => `${req.ip}:${req.tenant?.id ?? 'unknown'}`,
+  keyGenerator: (req) => `${ipKeyGenerator(req.ip ?? '')}:${req.tenant?.id ?? 'unknown'}`,
   message: { error: { code: 'RATE_LIMITED', message: 'Espera unos minutos antes de intentar otra reserva.' } },
 });
 
