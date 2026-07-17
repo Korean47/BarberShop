@@ -7,12 +7,15 @@ Plataforma multi-tenant para barberías construida como monolito modular: React/
 Requisitos: Node.js 22+, npm 10+ y PostgreSQL 16+ (o Docker).
 
 ```bash
-cp .env.example .env
+cp .env.example server/.env
+cp .env.example client/.env
 docker compose up -d postgres
 npm run install:all
 npm run db:setup
 npm run dev
 ```
+
+En PowerShell, usa `Copy-Item .env.example server/.env` y `Copy-Item .env.example client/.env` en lugar de `cp`. Antes de ejecutar la semilla, cambia `SEED_OWNER_PASSWORD` y `SEED_PLATFORM_PASSWORD` en `server/.env`.
 
 Abre `http://localhost:5173`. La API escucha en `http://localhost:3001`.
 
