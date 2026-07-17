@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { AppointmentStatus, PaymentStatus, Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { prisma } from '../../utils/prisma.js';
@@ -6,12 +6,14 @@ import { env } from '../../config/env.js';
 import { canTransitionAppointment } from '../../domain/appointment-status.js';
 import { clockToMinutes } from '../../domain/scheduling.js';
 import { evaluateSubscriptionAccess } from '../subscriptions/subscription-policy.js';
-import { getPaymentProvider } from '../payments/provider-registry.js';
+import { getPaymentProvider, onlinePaymentsConfigured } from '../payments/provider-registry.js';
+import type { CreatedPayment } from '../payments/payment-provider.js';
+import { bookingPolicyFromSettings, canCustomerModify } from '../../domain/booking-policy.js';
 import { randomToken, sha256 } from '../../shared/crypto.js';
 import { badRequest, conflict, forbidden, notFound } from '../../shared/errors.js';
 import { findAvailability } from '../availability/availability-service.js';
 import { appointmentInclude, toAppointmentDto } from './appointment-dto.js';
-import type { CreateBookingInput, ManageAppointmentInput } from './booking-schemas.js';
+import type { AccessAppointmentInput, CreateBookingInput, ManageAppointmentInput } from './booking-schemas.js';
 
 const terminalStatuses: AppointmentStatus[] = ['COMPLETED', 'CANCELLED', 'NO_SHOW'];
 
@@ -23,6 +25,9 @@ interface TenantInput {
 }
 
 export async function createBooking(tenant: TenantInput, input: CreateBookingInput) {
+  if (input.paymentMethod === 'ONLINE' && !onlinePaymentsConfigured()) {
+    throw badRequest('ONLINE_PAYMENT_UNAVAILABLE', 'El pago en línea no está disponible. Selecciona pago en el local.');
+  }
   const availability = await findAvailability({
     tenantId: tenant.id,
     timezone: tenant.timezone,
@@ -38,23 +43,24 @@ export async function createBooking(tenant: TenantInput, input: CreateBookingInp
 
   const quotedServices = await prisma.service.findMany({
     where: { id: { in: input.serviceIds }, tenantId: tenant.id, isActive: true },
-    select: { priceCents: true },
+    select: { name: true, priceCents: true },
   });
   if (quotedServices.length !== input.serviceIds.length) {
     throw badRequest('INVALID_SERVICE', 'Uno de los servicios ya no está disponible');
   }
   const quotedTotalCents = quotedServices.reduce((sum, service) => sum + service.priceCents, 0);
   const appointmentId = randomUUID();
+  const publicCode = randomBytes(5).toString('hex').slice(0, 8).toUpperCase();
   const managementToken = randomToken();
   const idempotencyKey = `booking:${appointmentId}`;
-  const onlinePayment = input.paymentMethod === 'ONLINE'
-    ? await getPaymentProvider().createPayment({
-        appointmentId,
-        amountCents: quotedTotalCents,
-        currency: tenant.currency,
-        idempotencyKey,
-      })
-    : null;
+  const paymentProvider = input.paymentMethod === 'ONLINE' ? getPaymentProvider() : null;
+  const settingRows = await prisma.tenantSetting.findMany({
+    where: { tenantId: tenant.id, key: { startsWith: 'booking.' } },
+    select: { key: true, value: true },
+  });
+  const policy = bookingPolicyFromSettings(Object.fromEntries(settingRows.map(({ key, value }) => [key, value])));
+  const holdMinutes = paymentProvider?.name === 'stripe' ? Math.max(30, policy.holdMinutes) : policy.holdMinutes;
+  const holdExpiresAt = paymentProvider ? DateTime.utc().plus({ minutes: holdMinutes }).toJSDate() : null;
 
   const created = await prisma.$transaction(async (tx) => {
     const subscription = await tx.subscription.findUnique({
@@ -113,7 +119,7 @@ export async function createBooking(tenant: TenantInput, input: CreateBookingInp
     });
 
     const status: AppointmentStatus = input.paymentMethod === 'CASH' ? 'CONFIRMED' : 'PENDING';
-    const expiresAt = DateTime.min(endsAt.plus({ days: 7 }), DateTime.utc().plus({ days: 30 })).toJSDate();
+    const expiresAt = endsAt.plus({ days: 7 }).toJSDate();
     const recipient = input.customer.email || input.customer.phone;
     const channel = input.customer.email ? 'EMAIL' : 'SMS';
 
@@ -130,6 +136,8 @@ export async function createBooking(tenant: TenantInput, input: CreateBookingInp
         notes: input.customer.notes,
         totalCents,
         currency: tenant.currency,
+        publicCode,
+        holdExpiresAt,
         managementTokenHash: sha256(managementToken),
         managementTokenExpiresAt: expiresAt,
         services: {
@@ -149,9 +157,9 @@ export async function createBooking(tenant: TenantInput, input: CreateBookingInp
             status: PaymentStatus.PENDING,
             amountCents: totalCents,
             currency: tenant.currency,
-            provider: onlinePayment ? getPaymentProvider().name : null,
-            providerPaymentId: onlinePayment?.providerPaymentId,
-            attempts: onlinePayment
+            provider: paymentProvider?.name ?? null,
+            checkoutExpiresAt: holdExpiresAt,
+            attempts: paymentProvider
               ? { create: { idempotencyKey, status: PaymentStatus.PENDING } }
               : undefined,
           },
@@ -161,21 +169,64 @@ export async function createBooking(tenant: TenantInput, input: CreateBookingInp
             tenantId: tenant.id,
             channel,
             recipient,
-            templateKey: 'appointment.confirmation',
-            idempotencyKey: `appointment:${appointmentId}:confirmation:${channel}`,
+            templateKey: paymentProvider ? 'appointment.payment_pending' : 'appointment.confirmation',
+            idempotencyKey: `appointment:${appointmentId}:${paymentProvider ? 'payment-pending' : 'confirmation'}:${channel}`,
             scheduledAt: new Date(),
           },
         },
       },
       include: appointmentInclude,
     });
-  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }).catch((error: unknown) => {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2034') {
+      throw conflict('SLOT_UNAVAILABLE', 'Ese horario acaba de ocuparse. Selecciona otro de los horarios disponibles.');
+    }
+    throw error;
+  });
+
+  let checkout: CreatedPayment | null = null;
+  if (paymentProvider && holdExpiresAt) {
+    try {
+      checkout = await paymentProvider.createPayment({
+        appointmentId,
+        amountCents: quotedTotalCents,
+        currency: tenant.currency,
+        idempotencyKey,
+        description: quotedServices.map(({ name }) => name).join(' + '),
+        customerEmail: input.customer.email || undefined,
+        expiresAt: holdExpiresAt,
+        successUrl: `${env.PUBLIC_APP_URL}/manage/${managementToken}?payment=success`,
+        cancelUrl: `${env.PUBLIC_APP_URL}/manage/${managementToken}?payment=cancelled`,
+      });
+      await prisma.payment.updateMany({
+        where: { appointmentId, status: 'PENDING' },
+        data: { providerPaymentId: checkout.providerPaymentId, checkoutExpiresAt: checkout.expiresAt },
+      });
+    } catch {
+      await prisma.$transaction([
+        prisma.payment.updateMany({ where: { appointmentId }, data: { status: 'FAILED' } }),
+        prisma.appointment.update({
+          where: { id: appointmentId },
+          data: {
+            status: 'CANCELLED',
+            holdExpiresAt: null,
+            statusHistory: { create: { fromStatus: 'PENDING', toStatus: 'CANCELLED', reason: 'No fue posible iniciar el pago' } },
+          },
+        }),
+      ]);
+      throw conflict('PAYMENT_UNAVAILABLE', 'No pudimos iniciar el pago. El horario fue liberado; intenta nuevamente.');
+    }
+  }
 
   return {
     appointment: toAppointmentDto(created, tenant.timezone),
     manageToken: managementToken,
     manageUrl: `${env.PUBLIC_APP_URL}/manage/${managementToken}`,
-    payment: onlinePayment ? { clientSecret: onlinePayment.clientSecret, provider: getPaymentProvider().name } : null,
+    payment: checkout ? {
+      checkoutUrl: checkout.checkoutUrl,
+      provider: paymentProvider?.name,
+      expiresAt: checkout.expiresAt.toISOString(),
+    } : null,
   };
 }
 
@@ -213,6 +264,33 @@ export async function getManagedAppointment(tenantId: string, timezone: string, 
   return toAppointmentDto(appointment, timezone);
 }
 
+export async function accessAppointment(tenant: TenantInput, input: AccessAppointmentInput) {
+  const appointment = await prisma.appointment.findFirst({
+    where: {
+      tenantId: tenant.id,
+      publicCode: input.publicCode,
+      customer: { phone: input.phone },
+    },
+    include: appointmentInclude,
+  });
+  if (!appointment) throw notFound('Cita');
+
+  const managementToken = randomToken();
+  const expiresAt = DateTime.max(
+    DateTime.utc().plus({ hours: 24 }),
+    DateTime.fromJSDate(appointment.endsAt, { zone: 'utc' }).plus({ days: 7 }),
+  ).toJSDate();
+  await prisma.appointment.update({
+    where: { id: appointment.id },
+    data: { managementTokenHash: sha256(managementToken), managementTokenExpiresAt: expiresAt },
+  });
+  return {
+    appointment: toAppointmentDto(appointment, tenant.timezone),
+    manageToken: managementToken,
+    manageUrl: `/manage/${managementToken}`,
+  };
+}
+
 export async function manageAppointment(
   tenant: TenantInput,
   token: string,
@@ -222,6 +300,21 @@ export async function manageAppointment(
   if (terminalStatuses.includes(appointment.status)) {
     throw conflict('APPOINTMENT_FINAL', 'Esta cita ya no se puede modificar');
   }
+  const policyRows = await prisma.tenantSetting.findMany({
+    where: { tenantId: tenant.id, key: { startsWith: 'booking.' } },
+    select: { key: true, value: true },
+  });
+  const policy = bookingPolicyFromSettings(Object.fromEntries(policyRows.map(({ key, value }) => [key, value])));
+  if (!canCustomerModify(appointment.startsAt, policy)) {
+    throw forbidden(
+      'CHANGE_WINDOW_CLOSED',
+      'Esta cita ya no puede modificarse desde el sitio porque está próxima a comenzar. Comunícate con la barbería para solicitar ayuda.',
+    );
+  }
+
+  const recipient = appointment.customer.email || appointment.customer.phone;
+  const channel = appointment.customer.email ? 'EMAIL' : 'SMS';
+  const nextVersion = appointment.version + 1;
 
   if (input.action === 'cancel') {
     if (!canTransitionAppointment(appointment.status, 'CANCELLED')) {
@@ -234,6 +327,16 @@ export async function manageAppointment(
         version: { increment: 1 },
         statusHistory: {
           create: { fromStatus: appointment.status, toStatus: 'CANCELLED', reason: input.reason ?? 'Cancelada por cliente' },
+        },
+        notifications: {
+          create: {
+            tenantId: tenant.id,
+            channel,
+            recipient,
+            templateKey: 'appointment.cancelled',
+            idempotencyKey: `appointment:${appointment.id}:cancelled:v${nextVersion}:${channel}`,
+            scheduledAt: new Date(),
+          },
         },
       },
       include: appointmentInclude,
@@ -256,15 +359,32 @@ export async function manageAppointment(
 
   const duration = Math.round((appointment.endsAt.getTime() - appointment.startsAt.getTime()) / 60_000);
   const startsAt = DateTime.fromISO(`${input.date}T${input.startTime}`, { zone: tenant.timezone });
-  const updated = await prisma.appointment.update({
+  const updated = await prisma.$transaction(async (tx) => tx.appointment.update({
     where: { id: appointment.id, tenantId: tenant.id },
     data: {
       startsAt: startsAt.toUTC().toJSDate(),
       endsAt: startsAt.plus({ minutes: duration }).toUTC().toJSDate(),
       version: { increment: 1 },
+      statusHistory: {
+        create: {
+          fromStatus: appointment.status,
+          toStatus: appointment.status,
+          reason: 'Reprogramada por cliente',
+        },
+      },
+      notifications: {
+        create: {
+          tenantId: tenant.id,
+          channel,
+          recipient,
+          templateKey: 'appointment.rescheduled',
+          idempotencyKey: `appointment:${appointment.id}:rescheduled:v${nextVersion}:${channel}`,
+          scheduledAt: new Date(),
+        },
+      },
     },
     include: appointmentInclude,
-  });
+  }), { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   return toAppointmentDto(updated, tenant.timezone);
 }
 

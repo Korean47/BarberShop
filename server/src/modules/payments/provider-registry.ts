@@ -6,8 +6,15 @@ import { StripePaymentProvider } from './stripe-payment-provider.js';
 let provider: PaymentProvider | undefined;
 
 export function getPaymentProvider() {
+  if (env.PAYMENT_PROVIDER === 'disabled') {
+    throw new Error('Online payments are not configured');
+  }
   if (!provider) {
     provider = env.PAYMENT_PROVIDER === 'stripe' ? new StripePaymentProvider() : new MockPaymentProvider();
   }
   return provider;
+}
+
+export function onlinePaymentsConfigured() {
+  return env.PAYMENT_PROVIDER !== 'disabled';
 }

@@ -22,6 +22,7 @@ export function toAppointmentDto(appointment: AppointmentWithDetails, timezone: 
 
   return {
     id: appointment.id,
+    publicCode: appointment.publicCode,
     date: start.startOf('day').toUTC().toISO(),
     startsAt: appointment.startsAt.toISOString(),
     endsAt: appointment.endsAt.toISOString(),
@@ -31,6 +32,7 @@ export function toAppointmentDto(appointment: AppointmentWithDetails, timezone: 
     notes: appointment.notes,
     totalCents: appointment.totalCents,
     currency: appointment.currency,
+    holdExpiresAt: appointment.holdExpiresAt?.toISOString() ?? null,
     barberId: appointment.barberId,
     barber: {
       id: appointment.barber.id,
@@ -50,6 +52,7 @@ export function toAppointmentDto(appointment: AppointmentWithDetails, timezone: 
       duration: appointment.services.reduce((sum, item) => sum + item.durationMinutesSnapshot, 0),
       price: appointment.totalCents / 100,
       category: primary?.service.category.name ?? 'General',
+      priceType: primary?.service.priceType.toLowerCase() ?? 'fixed',
       isActive: primary?.service.isActive ?? false,
     },
     services: appointment.services.map((item) => ({
@@ -71,9 +74,16 @@ export function toAppointmentDto(appointment: AppointmentWithDetails, timezone: 
       id: appointment.location.id,
       name: appointment.location.name,
       address: [appointment.location.addressLine1, appointment.location.city].join(', '),
+      mapsUrl: appointment.location.mapsUrl,
     },
     payment: payment
-      ? { id: payment.id, method: payment.method.toLowerCase(), status: payment.status.toLowerCase() }
+      ? {
+          id: payment.id,
+          method: payment.method.toLowerCase(),
+          status: payment.status.toLowerCase(),
+          provider: payment.provider,
+          checkoutExpiresAt: payment.checkoutExpiresAt?.toISOString() ?? null,
+        }
       : null,
     referenceImages: appointment.referenceImages,
     createdAt: appointment.createdAt.toISOString(),

@@ -18,7 +18,8 @@ export class MockPaymentProvider implements PaymentProvider {
     const providerPaymentId = `mock_${randomUUID()}`;
     return {
       providerPaymentId,
-      clientSecret: `mock_secret_${input.appointmentId}_${input.idempotencyKey.slice(0, 12)}`,
+      checkoutUrl: `${env.PUBLIC_APP_URL}/payment-sandbox/${providerPaymentId}?success=${encodeURIComponent(input.successUrl)}&cancel=${encodeURIComponent(input.cancelUrl)}`,
+      expiresAt: input.expiresAt,
     };
   }
 

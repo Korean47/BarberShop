@@ -32,5 +32,11 @@ export const manageAppointmentSchema = z.discriminatedUnion('action', [
   }),
 ]);
 
+export const accessAppointmentSchema = z.object({
+  publicCode: z.string().trim().toUpperCase().regex(/^[A-Z0-9]{6,12}$/),
+  phone: phoneSchema,
+});
+
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
 export type ManageAppointmentInput = z.infer<typeof manageAppointmentSchema>;
+export type AccessAppointmentInput = z.infer<typeof accessAppointmentSchema>;

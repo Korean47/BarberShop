@@ -8,6 +8,7 @@ const navigation = [
   { to: '/admin/appointments', label: 'Citas', icon: CalendarDays },
   { to: '/admin/customers', label: 'Clientes', icon: Users },
   { to: '/admin/barbers', label: 'Barberos', icon: Scissors },
+  { to: '/admin/services', label: 'Servicios', icon: Scissors },
   { to: '/admin/finances', label: 'Pagos y caja', icon: WalletCards },
   { to: '/admin/inventory', label: 'Inventario', icon: Package },
   { to: '/admin/settings', label: 'Configuración', icon: Settings },
@@ -15,7 +16,7 @@ const navigation = [
 ];
 
 const pageNames: Record<string, string> = {
-  '/admin': 'Resumen de hoy', '/admin/appointments': 'Citas', '/admin/customers': 'Clientes', '/admin/finances': 'Pagos y caja', '/admin/barbers': 'Barberos', '/admin/inventory': 'Inventario', '/admin/documents': 'Documentos', '/admin/settings': 'Configuración', '/admin/billing': 'Suscripción',
+  '/admin': 'Resumen de hoy', '/admin/appointments': 'Citas', '/admin/customers': 'Clientes', '/admin/finances': 'Pagos y caja', '/admin/barbers': 'Barberos', '/admin/services': 'Servicios', '/admin/inventory': 'Inventario', '/admin/documents': 'Documentos', '/admin/settings': 'Configuración', '/admin/billing': 'Suscripción',
 };
 
 export function AdminLayout() {

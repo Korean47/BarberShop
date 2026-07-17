@@ -21,7 +21,7 @@ const envSchema = z
     JWT_ISSUER: z.string().default('barbershop-api'),
     JWT_AUDIENCE: z.string().default('barbershop-admin'),
     SESSION_TTL_MINUTES: z.coerce.number().int().min(15).max(1440).default(480),
-    PAYMENT_PROVIDER: z.enum(['mock', 'stripe']).default('mock'),
+    PAYMENT_PROVIDER: z.enum(['disabled', 'mock', 'stripe']).default('disabled'),
     PAYMENT_WEBHOOK_SECRET: z
       .string()
       .min(24)

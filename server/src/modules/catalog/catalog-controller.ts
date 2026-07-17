@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { evaluateSubscriptionAccess } from '../subscriptions/subscription-policy.js';
 import { requireTenant } from '../../middleware/tenant-context.js';
 import { getTenantContext, listPublicBarbers, listPublicServices } from './catalog-service.js';
+import { onlinePaymentsConfigured } from '../payments/provider-registry.js';
 
 export async function tenantContext(req: Request, res: Response, next: NextFunction) {
   try {
@@ -12,7 +13,23 @@ export async function tenantContext(req: Request, res: Response, next: NextFunct
       subscriptionStatus: tenant.subscriptionStatus,
       graceEndsAt: tenant.graceEndsAt,
     });
-    res.json({ ...context, bookingAvailable: access.allowed });
+    const settings = Object.fromEntries(context.settings.map(({ key, value }) => [key, value]));
+    const online = settings['booking.allowOnline'] === 'true' && onlinePaymentsConfigured();
+    res.json({
+      ...context,
+      bookingAvailable: access.allowed,
+      paymentOptions: {
+        cash: settings['booking.allowCash'] !== 'false',
+        online,
+        provider: online ? 'configured' : null,
+      },
+      bookingRules: {
+        minimumNoticeMinutes: Number(settings['booking.minimumNoticeMinutes'] ?? 120),
+        maxAdvanceDays: Number(settings['booking.maxAdvanceDays'] ?? 90),
+        changeCutoffHours: Number(settings['booking.cancellationHours'] ?? 2),
+        holdMinutes: Number(settings['booking.holdMinutes'] ?? 30),
+      },
+    });
   } catch (error) {
     next(error);
   }

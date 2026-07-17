@@ -8,6 +8,8 @@ import type {
   Service,
   TenantContextData,
   UpdateAppointmentInput,
+  AdminCatalogData,
+  AdminSettingsData,
 } from '../types';
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? '/api';
@@ -118,6 +120,16 @@ export const rescheduleManagedAppointment = (token: string, date: string, startT
     body: JSON.stringify({ action: 'reschedule', date, startTime }),
   }, true);
 
+export const accessAppointment = (publicCode: string, phone: string) =>
+  fetchJSON<{ appointment: Appointment; manageToken: string; manageUrl: string }>('/public/appointments/access', {
+    method: 'POST', body: JSON.stringify({ publicCode, phone }),
+  }, true);
+
+export const settleSandboxPayment = (paymentId: string, outcome: 'paid' | 'failed') =>
+  fetchJSON<{ status: string; duplicate: boolean }>(`/public/payments/sandbox/${encodeURIComponent(paymentId)}`, {
+    method: 'POST', body: JSON.stringify({ outcome }),
+  }, true);
+
 export const login = (email: string, password: string) =>
   fetchJSON<{ user: AuthSession['user']; csrf: string }>('/auth/login', {
     method: 'POST', body: JSON.stringify({ email, password }),
@@ -156,3 +168,16 @@ export const updateAppointment = (id: string, data: UpdateAppointmentInput) =>
   fetchJSON<Appointment>(`/admin/appointments/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
 export const cancelAppointment = (id: string) =>
   fetchJSON<Appointment>(`/admin/appointments/${id}`, { method: 'DELETE', body: JSON.stringify({}) });
+
+export const getAdminSettings = () => fetchJSON<AdminSettingsData>('/admin/settings');
+export const updateAdminSettings = (data: unknown) =>
+  fetchJSON<AdminSettingsData>('/admin/settings', { method: 'PATCH', body: JSON.stringify(data) });
+export const getAdminCatalog = () => fetchJSON<AdminCatalogData>('/admin/catalog');
+export const createAdminService = (data: unknown) =>
+  fetchJSON('/admin/services', { method: 'POST', body: JSON.stringify(data) });
+export const updateAdminService = (id: string, data: unknown) =>
+  fetchJSON(`/admin/services/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+export const createAdminBarber = (data: unknown) =>
+  fetchJSON('/admin/barbers', { method: 'POST', body: JSON.stringify(data) });
+export const updateAdminBarber = (id: string, data: unknown) =>
+  fetchJSON(`/admin/barbers/${id}`, { method: 'PATCH', body: JSON.stringify(data) });

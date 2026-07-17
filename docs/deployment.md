@@ -47,13 +47,30 @@ Publicar `client/dist` en CDN y redirigir rutas SPA a `index.html`. El balancead
 
 La semilla muestra el orden; para operación real conviene convertirlo en un comando administrativo que reciba los datos y registre auditoría.
 
-## Stripe
+## Pagos
+
+La reserva crea primero una cita pendiente con retención temporal. El cliente se envía a un checkout alojado y sólo un evento firmado cambia el pago a pagado y la cita a confirmada. Un rechazo o vencimiento cancela la cita pendiente y libera el horario. Las claves nunca se exponen al cliente y el modo `mock` está bloqueado cuando `NODE_ENV=production`.
+
+Para desarrollo puede usarse `PAYMENT_PROVIDER=mock`. Para operar sin cobro en línea usa `PAYMENT_PROVIDER=disabled`; la interfaz oculta esa opción y conserva pago en el local.
+
+### Stripe
 
 1. Crear claves restringidas y endpoint webhook HTTPS.
-2. Configurar eventos `payment_intent.succeeded`, `payment_intent.payment_failed`, `customer.subscription.updated` y `customer.subscription.deleted`.
+2. Configurar los eventos `checkout.session.completed` y `checkout.session.expired` para reservaciones. Los eventos de suscripción siguen en el flujo de billing separado.
 3. Guardar secret del endpoint en `STRIPE_WEBHOOK_SECRET`.
-4. Ejecutar una compra de prueba y comprobar `ExternalEvent`, `PaymentAttempt` y `SubscriptionEvent`.
-5. No activar pago online en `TenantSetting` antes de completar conciliación y política de reembolso.
+4. Apuntar el webhook de reservaciones a `https://TU_DOMINIO/api/webhooks/payments`.
+5. Ejecutar aprobación, rechazo, abandono y reenvío duplicado; comprobar `ExternalEvent`, `PaymentAttempt`, `Payment` y `AppointmentHistory`.
+6. No activar pago online en `TenantSetting` antes de completar conciliación y política de reembolso.
+
+La pantalla administrativa indica si el proveedor está configurado, pero no muestra ni permite editar secretos.
+
+## Medios de la portada
+
+La portada acepta video de escritorio, video móvil, poster e imágenes de respaldo. El video debe estar optimizado para web, reproducirse sin audio y disponer de poster. Si no existe video, falla o la persona prefiere movimiento reducido, se conserva una imagen funcional. En producción sirve estos medios desde CDN/S3 con URLs HTTPS y derechos de uso verificados.
+
+## Notificaciones y acceso a citas
+
+El acceso público requiere código de cita y teléfono, rota el token de gestión y aplica rate limit. El repositorio registra los eventos de notificación, pero el envío real por SMS, WhatsApp o correo requiere conectar un proveedor transaccional antes de prometer OTP o confirmaciones automáticas al cliente.
 
 ## Backup y restauración
 

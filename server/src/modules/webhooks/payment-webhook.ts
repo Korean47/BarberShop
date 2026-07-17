@@ -18,7 +18,10 @@ export async function paymentWebhook(req: Request, res: Response, next: NextFunc
   try {
     if (!Buffer.isBuffer(req.body)) throw badRequest('RAW_BODY_REQUIRED', 'Webhook inválido');
     const provider = getPaymentProvider();
-    const event = provider.verifyWebhook(req.body, req.header('x-webhook-signature'));
+    const signature = provider.name === 'stripe'
+      ? req.header('stripe-signature')
+      : req.header('x-webhook-signature');
+    const event = provider.verifyWebhook(req.body, signature);
     const existing = await prisma.externalEvent.findUnique({
       where: { provider_externalEventId: { provider: provider.name, externalEventId: event.id } },
     });
@@ -62,12 +65,20 @@ export async function paymentWebhook(req: Request, res: Response, next: NextFunc
               },
             },
           });
-          if (nextStatus === 'PAID' && payment.appointment.status === 'PENDING') {
+          if (payment.appointment.status === 'PENDING') {
+            const appointmentStatus = nextStatus === 'PAID' ? 'CONFIRMED' : 'CANCELLED';
             await tx.appointment.update({
               where: { id: payment.appointmentId },
               data: {
-                status: 'CONFIRMED',
-                statusHistory: { create: { fromStatus: 'PENDING', toStatus: 'CONFIRMED', reason: 'Pago confirmado' } },
+                status: appointmentStatus,
+                holdExpiresAt: null,
+                statusHistory: {
+                  create: {
+                    fromStatus: 'PENDING',
+                    toStatus: appointmentStatus,
+                    reason: nextStatus === 'PAID' ? 'Pago confirmado' : 'Pago rechazado o checkout vencido',
+                  },
+                },
               },
             });
           }

@@ -48,6 +48,13 @@ enum PaymentStatus {
   PARTIALLY_REFUNDED
 }
 
+enum ServicePriceType {
+  FIXED
+  STARTING_AT
+  ESTIMATE
+  CONFIRM
+}
+
 enum NotificationChannel {
   EMAIL
   SMS
@@ -113,10 +120,20 @@ model TenantBranding {
   tenantId        String    @id @db.Uuid
   logoUrl         String?   @db.VarChar(500)
   heroImageUrl    String?   @db.VarChar(500)
-  primaryColor    String    @default("#c58b45") @db.Char(7)
-  secondaryColor  String    @default("#17211d") @db.Char(7)
-  accentColor     String    @default("#f0d3a7") @db.Char(7)
-  backgroundColor String    @default("#f6f2ea") @db.Char(7)
+  heroVideoUrl    String?   @db.VarChar(500)
+  heroMobileVideoUrl String? @db.VarChar(500)
+  heroPosterUrl   String?   @db.VarChar(500)
+  heroFallbackUrls String   @default("[]") @db.Text
+  heroTitle       String    @default("Cortes y barba, con tiempo para hacerlo bien.") @db.VarChar(180)
+  heroSubtitle    String    @default("Elige servicio, barbero y horario. Tu cita queda lista en pocos pasos.") @db.VarChar(300)
+  shopImageUrl    String?   @db.VarChar(500)
+  mapUrl          String?   @db.VarChar(500)
+  whatsappUrl     String?   @db.VarChar(500)
+  instagramUrl    String?   @db.VarChar(500)
+  primaryColor    String    @default("#183A44") @db.Char(7)
+  secondaryColor  String    @default("#17191C") @db.Char(7)
+  accentColor     String    @default("#B8543C") @db.Char(7)
+  backgroundColor String    @default("#F5F2EB") @db.Char(7)
   fontFamily      String    @default("Inter") @db.VarChar(80)
   publishedAt     DateTime? @db.Timestamptz(3)
   updatedAt       DateTime  @updatedAt @db.Timestamptz(3)
@@ -147,6 +164,7 @@ model Location {
   postalCode        String?            @db.VarChar(20)
   countryCode       String             @default("MX") @db.Char(2)
   phone             String?            @db.VarChar(32)
+  mapsUrl           String?            @db.VarChar(500)
   isDefault         Boolean            @default(false)
   isActive          Boolean            @default(true)
   createdAt         DateTime           @default(now()) @db.Timestamptz(3)
@@ -155,9 +173,24 @@ model Location {
   businessSchedules BusinessSchedule[]
   barberSchedules   BarberSchedule[]
   appointments      Appointment[]
+  scheduleExceptions LocationScheduleException[]
 
   @@unique([tenantId, slug])
   @@index([tenantId, isActive])
+}
+
+model LocationScheduleException {
+  id          String   @id @default(uuid()) @db.Uuid
+  locationId  String   @db.Uuid
+  date        DateTime @db.Date
+  isOpen      Boolean  @default(false)
+  startMinute Int?
+  endMinute   Int?
+  label       String?  @db.VarChar(160)
+  location    Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([locationId, date])
+  @@index([locationId, date])
 }
 
 model SubscriptionPlan {
@@ -359,6 +392,7 @@ model Service {
   bufferBeforeMinutes Int                  @default(0)
   bufferAfterMinutes  Int                  @default(0)
   priceCents          Int
+  priceType           ServicePriceType @default(FIXED)
   isActive            Boolean              @default(true)
   sortOrder           Int                  @default(0)
   createdAt           DateTime             @default(now()) @db.Timestamptz(3)
@@ -443,6 +477,8 @@ model Appointment {
   notes                    String?                     @db.Text
   totalCents               Int
   currency                 String                      @db.Char(3)
+  publicCode               String                      @db.VarChar(12)
+  holdExpiresAt            DateTime?                   @db.Timestamptz(3)
   managementTokenHash      String                      @unique @db.Char(64)
   managementTokenExpiresAt DateTime                    @db.Timestamptz(3)
   version                  Int                         @default(1)
@@ -461,6 +497,7 @@ model Appointment {
   @@index([tenantId, startsAt])
   @@index([tenantId, barberId, startsAt, endsAt])
   @@index([tenantId, customerId, createdAt])
+  @@unique([tenantId, publicCode])
 }
 
 model AppointmentService {
@@ -515,6 +552,7 @@ model Payment {
   currency          String           @db.Char(3)
   provider          String?          @db.VarChar(40)
   providerPaymentId String?          @unique @db.VarChar(190)
+  checkoutExpiresAt DateTime?        @db.Timestamptz(3)
   paidAt            DateTime?        @db.Timestamptz(3)
   createdAt         DateTime         @default(now()) @db.Timestamptz(3)
   updatedAt         DateTime         @updatedAt @db.Timestamptz(3)

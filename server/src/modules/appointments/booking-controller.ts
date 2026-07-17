@@ -1,8 +1,8 @@
 import type { NextFunction, Request, Response } from 'express';
 import { requireTenant } from '../../middleware/tenant-context.js';
 import { badRequest } from '../../shared/errors.js';
-import { createBooking, getManagedAppointment, manageAppointment } from './booking-service.js';
-import type { CreateBookingInput, ManageAppointmentInput } from './booking-schemas.js';
+import { accessAppointment, createBooking, getManagedAppointment, manageAppointment } from './booking-service.js';
+import type { AccessAppointmentInput, CreateBookingInput, ManageAppointmentInput } from './booking-schemas.js';
 
 function managementToken(req: Request) {
   const token = req.header('x-appointment-token');
@@ -33,6 +33,15 @@ export async function updateManaged(req: Request, res: Response, next: NextFunct
   try {
     const tenant = requireTenant(req);
     res.json(await manageAppointment(tenant, managementToken(req), req.body as ManageAppointmentInput));
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function access(req: Request, res: Response, next: NextFunction) {
+  try {
+    const tenant = requireTenant(req);
+    res.json(await accessAppointment(tenant, req.body as AccessAppointmentInput));
   } catch (error) {
     next(error);
   }

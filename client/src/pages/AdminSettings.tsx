@@ -1,234 +1,98 @@
-import { useState } from 'react';
-import { Bell, Building2, CalendarClock, CreditCard, Save, ShieldCheck } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Building2, CalendarClock, CreditCard, Eye, Image, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { AdminPageHeader } from '../components/admin/AdminPageHeader';
 import { Button } from '../components/ui/Button';
+import { PageSpinner } from '../components/ui/Spinner';
+import { getAdminSettings, updateAdminSettings } from '../services/api';
+import type { AdminSettingsData } from '../types';
 
 const tabs = [
+  { id: 'landing', label: 'Landing', icon: Image },
   { id: 'business', label: 'Negocio', icon: Building2 },
-  { id: 'schedule', label: 'Horarios', icon: CalendarClock },
-  { id: 'notifications', label: 'Notificaciones', icon: Bell },
+  { id: 'schedule', label: 'Agenda', icon: CalendarClock },
   { id: 'payments', label: 'Pagos', icon: CreditCard },
-  { id: 'security', label: 'Seguridad', icon: ShieldCheck },
-];
+] as const;
 
-const fieldClass = 'admin-input mt-2';
+type TabId = typeof tabs[number]['id'];
+
+interface SettingsForm {
+  business: { name: string; contactEmail: string; contactPhone: string; timezone: string; currency: 'MXN' };
+  location: { id: string; name: string; addressLine1: string; addressLine2: string; city: string; state: string; postalCode: string; phone: string; mapsUrl: string; schedules: AdminSettingsData['locations'][number]['businessSchedules'] };
+  branding: {
+    logoUrl: string; heroImageUrl: string; heroVideoUrl: string; heroMobileVideoUrl: string; heroPosterUrl: string;
+    heroFallbackUrls: string; heroTitle: string; heroSubtitle: string; shopImageUrl: string; mapUrl: string;
+    whatsappUrl: string; instagramUrl: string; primaryColor: string; secondaryColor: string; accentColor: string;
+    backgroundColor: string; fontFamily: 'Inter' | 'DM Sans' | 'Source Sans 3' | 'system-ui'; publish: boolean;
+  };
+  booking: { minimumNoticeMinutes: number; maxAdvanceDays: number; changeCutoffHours: number; slotIntervalMinutes: number; holdMinutes: number };
+  payments: { allowCash: boolean; allowOnline: boolean };
+}
+
+function makeForm(data: AdminSettingsData): SettingsForm {
+  const settings = Object.fromEntries(data.settings.map(({ key, value }) => [key, value]));
+  const location = data.locations[0];
+  const branding = data.branding;
+  return {
+    business: { name: data.name, contactEmail: data.contactEmail || '', contactPhone: data.contactPhone || '', timezone: data.timezone, currency: 'MXN' },
+    location: {
+      id: location.id, name: location.name, addressLine1: location.addressLine1, addressLine2: location.addressLine2 || '', city: location.city,
+      state: location.state, postalCode: location.postalCode || '', phone: location.phone || '', mapsUrl: location.mapsUrl || '', schedules: location.businessSchedules,
+    },
+    branding: {
+      logoUrl: branding?.logoUrl || '', heroImageUrl: branding?.heroImageUrl || '', heroVideoUrl: branding?.heroVideoUrl || '', heroMobileVideoUrl: branding?.heroMobileVideoUrl || '',
+      heroPosterUrl: branding?.heroPosterUrl || '', heroFallbackUrls: (() => { try { return (JSON.parse(branding?.heroFallbackUrls || '[]') as string[]).join('\n'); } catch { return ''; } })(),
+      heroTitle: branding?.heroTitle || 'Cortes y barba, con tiempo para hacerlo bien.', heroSubtitle: branding?.heroSubtitle || 'Elige servicio, barbero y horario. Tu cita queda lista en pocos pasos.',
+      shopImageUrl: branding?.shopImageUrl || '', mapUrl: branding?.mapUrl || '', whatsappUrl: branding?.whatsappUrl || '', instagramUrl: branding?.instagramUrl || '',
+      primaryColor: branding?.primaryColor || '#183A44', secondaryColor: branding?.secondaryColor || '#17191C', accentColor: branding?.accentColor || '#B8543C',
+      backgroundColor: branding?.backgroundColor || '#F5F2EB', fontFamily: (branding?.fontFamily as SettingsForm['branding']['fontFamily']) || 'DM Sans', publish: true,
+    },
+    booking: {
+      minimumNoticeMinutes: Number(settings['booking.minimumNoticeMinutes'] || 120), maxAdvanceDays: Number(settings['booking.maxAdvanceDays'] || 90),
+      changeCutoffHours: Number(settings['booking.cancellationHours'] || 2), slotIntervalMinutes: Number(settings['booking.slotIntervalMinutes'] || 15), holdMinutes: Number(settings['booking.holdMinutes'] || 30),
+    },
+    payments: { allowCash: settings['booking.allowCash'] !== 'false', allowOnline: settings['booking.allowOnline'] === 'true' },
+  };
+}
 
 export function AdminSettings() {
-  const [activeTab, setActiveTab] = useState('business');
-  const [reminders, setReminders] = useState(true);
-  const [confirmations, setConfirmations] = useState(true);
-  const [marketing, setMarketing] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabId>('landing');
+  const [data, setData] = useState<AdminSettingsData | null>(null);
+  const [form, setForm] = useState<SettingsForm | null>(null);
+  const [saving, setSaving] = useState(false);
 
-  const save = () => toast.success('Configuración guardada');
+  useEffect(() => { getAdminSettings().then((value) => { setData(value); setForm(makeForm(value)); }).catch((error) => toast.error(error instanceof Error ? error.message : 'No pudimos cargar la configuración')); }, []);
+  const fallbackImages = useMemo(() => form?.branding.heroFallbackUrls.split('\n').map((item) => item.trim()).filter(Boolean) || [], [form?.branding.heroFallbackUrls]);
+
+  async function save() {
+    if (!form) return;
+    setSaving(true);
+    try {
+      const updated = await updateAdminSettings({ ...form, branding: { ...form.branding, heroFallbackUrls: fallbackImages } });
+      setData(updated);
+      setForm(makeForm(updated));
+      toast.success('Configuración publicada');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'No pudimos guardar la configuración');
+    } finally { setSaving(false); }
+  }
+
+  if (!data || !form) return <PageSpinner />;
+  const field = 'admin-input mt-1.5';
 
   return (
     <div className="space-y-7">
-      <AdminPageHeader
-        eyebrow="Preferencias del sistema"
-        title="Configuración"
-        description="Ajusta los datos del negocio, reglas de agenda, mensajes y permisos desde un solo lugar."
-        action={
-          <Button onClick={save}>
-            <Save className="h-4 w-4" />
-            Guardar cambios
-          </Button>
-        }
-      />
+      <AdminPageHeader eyebrow="Contenido y operación" title="Configuración" description="Los cambios publicados aquí se reflejan en el sitio de clientes y en las reglas del backend." action={<Button onClick={() => void save()} loading={saving}><Save className="h-4 w-4" /> Guardar y publicar</Button>} />
+      <section className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <aside className="admin-card h-fit p-2">{tabs.map((tab) => { const Icon = tab.icon; return <button key={tab.id} type="button" onClick={() => setActiveTab(tab.id)} className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold ${activeTab === tab.id ? 'bg-[#E9F1F2] text-[#183A44]' : 'text-slate-600 hover:bg-slate-50'}`}><Icon className="h-4 w-4" />{tab.label}</button>; })}</aside>
+        <article className="admin-card min-w-0 p-5 lg:p-7">
+          {activeTab === 'landing' && <div className="space-y-7"><div><h2 className="text-lg font-bold">Portada e identidad</h2><p className="mt-1 text-sm text-slate-500">Si no hay video, la portada utiliza las imágenes de respaldo en orden.</p></div><div className="grid gap-5 sm:grid-cols-2"><label className="text-sm font-semibold sm:col-span-2">Título principal<input className={field} value={form.branding.heroTitle} onChange={(event) => setForm({ ...form, branding: { ...form.branding, heroTitle: event.target.value } })} /></label><label className="text-sm font-semibold sm:col-span-2">Texto secundario<textarea className={`${field} min-h-24`} value={form.branding.heroSubtitle} onChange={(event) => setForm({ ...form, branding: { ...form.branding, heroSubtitle: event.target.value } })} /></label><label className="text-sm font-semibold">Video de escritorio<input className={field} value={form.branding.heroVideoUrl} onChange={(event) => setForm({ ...form, branding: { ...form.branding, heroVideoUrl: event.target.value } })} placeholder="https://… o /media/…" /></label><label className="text-sm font-semibold">Video móvil<input className={field} value={form.branding.heroMobileVideoUrl} onChange={(event) => setForm({ ...form, branding: { ...form.branding, heroMobileVideoUrl: event.target.value } })} /></label><label className="text-sm font-semibold">Imagen principal<input className={field} value={form.branding.heroImageUrl} onChange={(event) => setForm({ ...form, branding: { ...form.branding, heroImageUrl: event.target.value } })} /></label><label className="text-sm font-semibold">Poster del video<input className={field} value={form.branding.heroPosterUrl} onChange={(event) => setForm({ ...form, branding: { ...form.branding, heroPosterUrl: event.target.value } })} /></label><label className="text-sm font-semibold sm:col-span-2">Imágenes de respaldo, una por línea<textarea className={`${field} min-h-28 font-mono text-xs`} value={form.branding.heroFallbackUrls} onChange={(event) => setForm({ ...form, branding: { ...form.branding, heroFallbackUrls: event.target.value } })} /></label><label className="text-sm font-semibold">Foto del local<input className={field} value={form.branding.shopImageUrl} onChange={(event) => setForm({ ...form, branding: { ...form.branding, shopImageUrl: event.target.value } })} /></label><label className="text-sm font-semibold">URL de WhatsApp<input className={field} value={form.branding.whatsappUrl} onChange={(event) => setForm({ ...form, branding: { ...form.branding, whatsappUrl: event.target.value } })} /></label></div><div className="grid grid-cols-2 gap-4 sm:grid-cols-4">{(['primaryColor', 'secondaryColor', 'accentColor', 'backgroundColor'] as const).map((key) => <label key={key} className="text-xs font-semibold capitalize">{key.replace('Color', '')}<input type="color" className="mt-2 h-12 w-full rounded-lg border border-slate-300" value={form.branding[key]} onChange={(event) => setForm({ ...form, branding: { ...form.branding, [key]: event.target.value } })} /></label>)}</div><div className="overflow-hidden rounded-2xl border border-slate-200"><div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3 text-sm font-semibold"><Eye className="h-4 w-4" /> Vista previa</div><div className="relative min-h-72 bg-slate-900 p-6 text-white" style={{ backgroundImage: `linear-gradient(90deg,rgba(10,15,17,.88),rgba(10,15,17,.35)),url(${form.branding.heroImageUrl || fallbackImages[0] || '/images/hero-local.webp'})`, backgroundSize: 'cover', backgroundPosition: 'center' }}><div className="max-w-lg"><p className="text-sm text-white/70">{form.business.name}</p><p className="mt-5 text-4xl font-semibold leading-tight">{form.branding.heroTitle}</p><p className="mt-3 text-sm leading-6 text-white/75">{form.branding.heroSubtitle}</p></div></div></div></div>}
 
-      <section className="grid gap-6 lg:grid-cols-[230px_1fr]">
-        <aside className="admin-card h-fit p-2">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm transition-colors ${
-                  activeTab === tab.id
-                    ? 'bg-brand-500/10 font-medium text-brand-400'
-                    : 'text-slate-400 hover:bg-white/5 hover:text-white'
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-                {tab.label}
-              </button>
-            );
-          })}
-        </aside>
+          {activeTab === 'business' && <div className="space-y-6"><div><h2 className="text-lg font-bold">Información del negocio</h2><p className="mt-1 text-sm text-slate-500">Fuente única para la landing, confirmaciones y contacto.</p></div><div className="grid gap-5 sm:grid-cols-2"><label className="text-sm font-semibold">Nombre<input className={field} value={form.business.name} onChange={(event) => setForm({ ...form, business: { ...form.business, name: event.target.value } })} /></label><label className="text-sm font-semibold">Teléfono<input className={field} value={form.business.contactPhone} onChange={(event) => setForm({ ...form, business: { ...form.business, contactPhone: event.target.value } })} /></label><label className="text-sm font-semibold">Correo<input className={field} value={form.business.contactEmail} onChange={(event) => setForm({ ...form, business: { ...form.business, contactEmail: event.target.value } })} /></label><label className="text-sm font-semibold">Zona horaria<select className={field} value={form.business.timezone} onChange={(event) => setForm({ ...form, business: { ...form.business, timezone: event.target.value } })}><option>America/Hermosillo</option><option>America/Mexico_City</option><option>America/Tijuana</option><option>America/Chihuahua</option></select></label><label className="text-sm font-semibold">Sucursal<input className={field} value={form.location.name} onChange={(event) => setForm({ ...form, location: { ...form.location, name: event.target.value } })} /></label><label className="text-sm font-semibold">Dirección<input className={field} value={form.location.addressLine1} onChange={(event) => setForm({ ...form, location: { ...form.location, addressLine1: event.target.value } })} /></label><label className="text-sm font-semibold">Ciudad<input className={field} value={form.location.city} onChange={(event) => setForm({ ...form, location: { ...form.location, city: event.target.value } })} /></label><label className="text-sm font-semibold">Estado<input className={field} value={form.location.state} onChange={(event) => setForm({ ...form, location: { ...form.location, state: event.target.value } })} /></label><label className="text-sm font-semibold sm:col-span-2">Enlace real de Google Maps<input className={field} value={form.location.mapsUrl} onChange={(event) => setForm({ ...form, location: { ...form.location, mapsUrl: event.target.value } })} /></label></div></div>}
 
-        <article className="admin-card p-5 lg:p-7">
-          {activeTab === 'business' && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold text-white">Información del negocio</h3>
-                <p className="mt-1 text-sm text-slate-500">Datos visibles para clientes, comprobantes y comunicación.</p>
-              </div>
-              <div className="grid gap-5 sm:grid-cols-2">
-                <label className="text-sm text-slate-300">
-                  Nombre comercial
-                  <input className={fieldClass} defaultValue="Blades Barbería" />
-                </label>
-                <label className="text-sm text-slate-300">
-                  Teléfono
-                  <input className={fieldClass} defaultValue="(662) 123 4567" />
-                </label>
-                <label className="text-sm text-slate-300">
-                  Correo
-                  <input className={fieldClass} defaultValue="hola@blades.mx" />
-                </label>
-                <label className="text-sm text-slate-300">
-                  Zona horaria
-                  <select className={fieldClass} defaultValue="America/Hermosillo">
-                    <option value="America/Hermosillo">Hermosillo (GMT-7)</option>
-                    <option value="America/Mexico_City">Ciudad de México (GMT-6)</option>
-                  </select>
-                </label>
-                <label className="text-sm text-slate-300 sm:col-span-2">
-                  Dirección
-                  <input className={fieldClass} defaultValue="Blvd. Morelos 123, Col. Centro, Hermosillo, Son." />
-                </label>
-                <label className="text-sm text-slate-300">
-                  Moneda
-                  <select className={fieldClass} defaultValue="MXN">
-                    <option value="MXN">Peso mexicano (MXN)</option>
-                    <option value="USD">Dólar estadounidense (USD)</option>
-                  </select>
-                </label>
-                <label className="text-sm text-slate-300">
-                  Impuesto
-                  <input className={fieldClass} defaultValue="16%" />
-                </label>
-              </div>
-            </div>
-          )}
+          {activeTab === 'schedule' && <div className="space-y-6"><div><h2 className="text-lg font-bold">Reglas de agenda</h2><p className="mt-1 text-sm text-slate-500">Estas reglas se validan en el backend, no solo en la interfaz.</p></div><div className="grid gap-5 sm:grid-cols-2">{([['minimumNoticeMinutes', 'Anticipación mínima (min)'], ['maxAdvanceDays', 'Ventana máxima (días)'], ['changeCutoffHours', 'Margen para cambios (horas)'], ['slotIntervalMinutes', 'Intervalo de horarios (min)'], ['holdMinutes', 'Retención de pago (min)']] as const).map(([key, label]) => <label key={key} className="text-sm font-semibold">{label}<input type="number" min="0" className={field} value={form.booking[key]} onChange={(event) => setForm({ ...form, booking: { ...form.booking, [key]: Number(event.target.value) } })} /></label>)}</div><div><h3 className="font-semibold">Horario semanal</h3><div className="mt-3 grid gap-2 sm:grid-cols-2">{form.location.schedules.map((schedule) => <div key={schedule.dayOfWeek} className="flex items-center justify-between rounded-xl border border-slate-200 p-3 text-sm"><span>{['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][schedule.dayOfWeek]}</span><span className="text-slate-500">{Math.floor(schedule.startMinute / 60)}:{String(schedule.startMinute % 60).padStart(2, '0')}–{Math.floor(schedule.endMinute / 60)}:{String(schedule.endMinute % 60).padStart(2, '0')}</span></div>)}</div></div></div>}
 
-          {activeTab === 'schedule' && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold text-white">Reglas de agenda</h3>
-                <p className="mt-1 text-sm text-slate-500">Define cómo y con cuánta anticipación pueden reservar tus clientes.</p>
-              </div>
-              <div className="grid gap-5 sm:grid-cols-2">
-                <label className="text-sm text-slate-300">
-                  Anticipación mínima
-                  <select className={fieldClass} defaultValue="2">
-                    <option value="1">1 hora</option>
-                    <option value="2">2 horas</option>
-                    <option value="4">4 horas</option>
-                    <option value="24">24 horas</option>
-                  </select>
-                </label>
-                <label className="text-sm text-slate-300">
-                  Ventana máxima de reserva
-                  <select className={fieldClass} defaultValue="90">
-                    <option value="30">30 días</option>
-                    <option value="60">60 días</option>
-                    <option value="90">90 días</option>
-                  </select>
-                </label>
-                <label className="text-sm text-slate-300">
-                  Tiempo entre citas
-                  <select className={fieldClass} defaultValue="10">
-                    <option value="0">Sin espacio adicional</option>
-                    <option value="10">10 minutos</option>
-                    <option value="15">15 minutos</option>
-                  </select>
-                </label>
-                <label className="text-sm text-slate-300">
-                  Política de cancelación
-                  <select className={fieldClass} defaultValue="4">
-                    <option value="2">2 horas antes</option>
-                    <option value="4">4 horas antes</option>
-                    <option value="24">24 horas antes</option>
-                  </select>
-                </label>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'notifications' && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold text-white">Mensajes automáticos</h3>
-                <p className="mt-1 text-sm text-slate-500">Reduce ausencias y mantén informado al cliente durante todo el proceso.</p>
-              </div>
-              <div className="space-y-3">
-                {[
-                  { label: 'Confirmación al reservar', description: 'Envía los datos de la cita al cliente.', value: confirmations, setValue: setConfirmations },
-                  { label: 'Recordatorio automático', description: 'Envía un aviso 24 horas antes.', value: reminders, setValue: setReminders },
-                  { label: 'Campañas y promociones', description: 'Permite enviar novedades a clientes que aceptaron recibirlas.', value: marketing, setValue: setMarketing },
-                ].map((item) => (
-                  <div key={item.label} className="flex items-center justify-between gap-4 rounded-xl border border-white/5 p-4">
-                    <div>
-                      <p className="text-sm font-medium text-white">{item.label}</p>
-                      <p className="mt-1 text-xs text-slate-500">{item.description}</p>
-                    </div>
-                    <button
-                      onClick={() => item.setValue(!item.value)}
-                      className={`relative h-6 w-11 rounded-full transition-colors ${item.value ? 'bg-brand-500' : 'bg-slate-700'}`}
-                    >
-                      <span className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all ${item.value ? 'left-6' : 'left-1'}`} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'payments' && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold text-white">Métodos de pago</h3>
-                <p className="mt-1 text-sm text-slate-500">Define qué opciones se registran en caja y cuáles estarán disponibles en línea.</p>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-3">
-                {['Efectivo', 'Tarjeta', 'Transferencia'].map((method) => (
-                  <div key={method} className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
-                    <CreditCard className="h-5 w-5 text-emerald-400" />
-                    <p className="mt-3 text-sm font-medium text-white">{method}</p>
-                    <p className="mt-1 text-xs text-emerald-400">Activo</p>
-                  </div>
-                ))}
-              </div>
-              <div className="rounded-xl border border-brand-500/20 bg-brand-500/5 p-4">
-                <p className="text-sm font-medium text-white">Pagos en línea</p>
-                <p className="mt-1 text-xs leading-relaxed text-slate-400">
-                  Esta integración permitiría solicitar anticipos, reducir cancelaciones y liquidar desde el flujo de reserva.
-                </p>
-                <Button variant="outline" className="mt-4" onClick={() => toast.success('Integración marcada para revisión')}>
-                  Revisar integración
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'security' && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold text-white">Usuarios y seguridad</h3>
-                <p className="mt-1 text-sm text-slate-500">Controla quién puede consultar ingresos, editar citas o administrar personal.</p>
-              </div>
-              <div className="overflow-hidden rounded-xl border border-white/5">
-                {[
-                  ['Alejandro Ruiz', 'Administrador', 'Acceso completo'],
-                  ['Marcus Chen', 'Barbero', 'Agenda y clientes propios'],
-                  ['Laura Gómez', 'Recepción', 'Agenda, caja y clientes'],
-                ].map(([name, role, access]) => (
-                  <div key={name} className="flex items-center gap-4 border-b border-white/5 p-4 last:border-0">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-sm font-semibold text-slate-300">
-                      {name.split(' ').map((part) => part[0]).join('').slice(0, 2)}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-white">{name}</p>
-                      <p className="text-xs text-slate-500">{access}</p>
-                    </div>
-                    <span className="rounded-full bg-brand-500/10 px-2.5 py-1 text-xs text-brand-400">{role}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {activeTab === 'payments' && <div className="space-y-6"><div><h2 className="text-lg font-bold">Métodos de pago</h2><p className="mt-1 text-sm text-slate-500">El pago en línea solo se publica cuando el servidor tiene un proveedor configurado.</p></div><div className={`rounded-xl border p-4 ${data.paymentConfiguration.onlineConfigured ? 'border-emerald-200 bg-emerald-50' : 'border-amber-200 bg-amber-50'}`}><p className="font-semibold">Proveedor: {data.paymentConfiguration.provider}</p><p className="mt-1 text-sm">{data.paymentConfiguration.onlineConfigured ? `Configurado para ${data.paymentConfiguration.environment}.` : 'Faltan variables de entorno del proveedor. La opción permanece oculta para clientes.'}</p></div><label className="flex min-h-14 items-center justify-between rounded-xl border border-slate-200 p-4"><span><strong className="block text-sm">Pago en el local</strong><small className="text-slate-500">Permite confirmar la cita sin checkout.</small></span><input type="checkbox" className="h-5 w-5" checked={form.payments.allowCash} onChange={(event) => setForm({ ...form, payments: { ...form.payments, allowCash: event.target.checked } })} /></label><label className="flex min-h-14 items-center justify-between rounded-xl border border-slate-200 p-4"><span><strong className="block text-sm">Pago en línea</strong><small className="text-slate-500">Checkout alojado, webhook e idempotencia.</small></span><input type="checkbox" className="h-5 w-5" checked={form.payments.allowOnline} disabled={!data.paymentConfiguration.onlineConfigured} onChange={(event) => setForm({ ...form, payments: { ...form.payments, allowOnline: event.target.checked } })} /></label></div>}
         </article>
       </section>
     </div>

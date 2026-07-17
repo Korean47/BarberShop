@@ -11,12 +11,15 @@ import { useAuth } from './hooks/useAuth';
 const Home = lazy(() => import('./pages/Home').then((module) => ({ default: module.Home })));
 const BookAppointment = lazy(() => import('./pages/BookAppointment').then((module) => ({ default: module.BookAppointment })));
 const ManageAppointment = lazy(() => import('./pages/ManageAppointment').then((module) => ({ default: module.ManageAppointment })));
+const AppointmentLookup = lazy(() => import('./pages/AppointmentLookup').then((module) => ({ default: module.AppointmentLookup })));
+const PaymentSandbox = lazy(() => import('./pages/PaymentSandbox').then((module) => ({ default: module.PaymentSandbox })));
 const BarberDetails = lazy(() => import('./pages/BarberDetails').then((module) => ({ default: module.BarberDetails })));
 const Contact = lazy(() => import('./pages/Contact').then((module) => ({ default: module.Contact })));
 const AdminLogin = lazy(() => import('./pages/AdminLogin').then((module) => ({ default: module.AdminLogin })));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard').then((module) => ({ default: module.AdminDashboard })));
 const AdminAppointments = lazy(() => import('./pages/AdminAppointments').then((module) => ({ default: module.AdminAppointments })));
 const AdminBarbers = lazy(() => import('./pages/AdminBarbers').then((module) => ({ default: module.AdminBarbers })));
+const AdminServices = lazy(() => import('./pages/AdminServices').then((module) => ({ default: module.AdminServices })));
 const AdminCustomers = lazy(() => import('./pages/AdminCustomers').then((module) => ({ default: module.AdminCustomers })));
 const AdminFinances = lazy(() => import('./pages/AdminFinances').then((module) => ({ default: module.AdminFinances })));
 const AdminInventory = lazy(() => import('./pages/AdminInventory').then((module) => ({ default: module.AdminInventory })));
@@ -41,8 +44,8 @@ export default function App() {
           <Toaster
             position="top-center"
             toastOptions={{
-              style: { background: '#17313a', color: '#ffffff', borderRadius: '12px', fontSize: '14px' },
-              success: { iconTheme: { primary: '#f2c14e', secondary: '#17313a' } },
+              style: { background: '#17191C', color: '#ffffff', borderRadius: '12px', fontSize: '14px' },
+              success: { iconTheme: { primary: '#237A48', secondary: '#ffffff' } },
             }}
           />
           <Suspense fallback={<PageSpinner />}>
@@ -51,6 +54,8 @@ export default function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/book" element={<BookAppointment />} />
                 <Route path="/manage/:token" element={<ManageAppointment />} />
+                <Route path="/appointment" element={<AppointmentLookup />} />
+                <Route path="/payment-sandbox/:paymentId" element={<PaymentSandbox />} />
                 <Route path="/barbers/:id" element={<BarberDetails />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="*" element={<NotFound />} />
@@ -63,6 +68,7 @@ export default function App() {
                   <Route path="customers" element={<AdminCustomers />} />
                   <Route path="finances" element={<AdminFinances />} />
                   <Route path="barbers" element={<AdminBarbers />} />
+                  <Route path="services" element={<AdminServices />} />
                   <Route path="inventory" element={<AdminInventory />} />
                   <Route path="documents" element={<AdminDocuments />} />
                   <Route path="settings" element={<AdminSettings />} />

@@ -5,8 +5,8 @@ import { BookingProgress } from './BookingProgress';
 describe('BookingProgress', () => {
   it('announces the current visible step', () => {
     render(<BookingProgress current={3} />);
-    expect(screen.getByRole('navigation', { name: 'Progreso de la reserva' })).toBeInTheDocument();
-    expect(screen.getByText('Horario').closest('li')).toHaveAttribute('aria-current', 'step');
-    expect(screen.getByText('Tus datos').closest('li')).not.toHaveAttribute('aria-current');
+    expect(screen.getByRole('navigation', { name: 'Progreso de la reservación' })).toBeInTheDocument();
+    expect(screen.getByText('Fecha').closest('li')).toHaveAttribute('aria-current', 'step');
+    expect(screen.getByText('Datos').closest('li')).not.toHaveAttribute('aria-current');
   });
 });

@@ -15,17 +15,20 @@ npm run performance:check
 npm run verify
 ```
 
-## Evidencia 2026-07-15
+## Evidencia 2026-07-17
 
-- Servidor: 7 archivos, 20 pruebas aprobadas.
-- Cliente: 2 archivos, 2 pruebas de componentes aprobadas.
+- Servidor: 9 archivos, 25 pruebas aprobadas.
+- Cliente: 3 archivos, 5 pruebas de componentes aprobadas.
 - TypeScript servidor: aprobado.
 - ESLint cliente: aprobado.
 - Build cliente y servidor: aprobado.
 - Dependencias de producción: auditoría automatizada en CI para cliente y servidor.
-- JavaScript principal: 497.12 kB → 260.34 kB (−47.6%). Gzip: 148.86 kB → 83.84 kB (−43.7%). El grafo inicial queda en 93 kB gzip, por debajo del presupuesto de 150 kB.
-- Hero: 1,698.56 kB → 54.94 kB (−96.8%).
+- Presupuesto inicial: menos de 150 kB gzip; presupuesto de la portada: menos de 200 kB gzip.
+- QA real de reservación: creación, consulta segura, reprogramación, límite tardío y cancelación sincronizada con administración.
+- QA de pagos: aprobación, rechazo, idempotencia y liberación de horario al vencer la retención.
+- QA responsive sin desbordamiento horizontal en 320×568, 360×640, 375×667, 390×844, 412×915, 430×932, 768×1024, 1024×768, 1366×768 y 1440×900.
+- Consola del navegador: cero errores y cero advertencias en los recorridos probados.
 
 ## Pruebas que requieren PostgreSQL/credenciales
 
-CI aplica la migración completa. Antes de producción agregar pruebas de integración con dos tenants que creen/consulten recursos, dos transacciones concurrentes sobre el mismo rango, Stripe CLI para reenvío/duplicado y S3 real con política privada. Ejecutar E2E móvil para reserva, adjunto, login, suspensión y reactivación en un ambiente efímero.
+CI aplica la migración completa. Antes de producción ejecutar las mismas pruebas con Stripe CLI, S3 real y el proveedor transaccional seleccionado; mantener pruebas de aislamiento con dos tenants y dos transacciones concurrentes sobre el mismo rango. También debe validarse el medio final licenciado de portada en conexiones lentas y dispositivos físicos.

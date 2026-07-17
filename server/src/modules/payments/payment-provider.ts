@@ -3,11 +3,17 @@ export interface CreatePaymentInput {
   currency: string;
   idempotencyKey: string;
   appointmentId: string;
+  description: string;
+  customerEmail?: string;
+  expiresAt: Date;
+  successUrl: string;
+  cancelUrl: string;
 }
 
 export interface CreatedPayment {
   providerPaymentId: string;
-  clientSecret: string;
+  checkoutUrl: string;
+  expiresAt: Date;
 }
 
 export interface VerifiedWebhookEvent {

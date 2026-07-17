@@ -3,41 +3,84 @@
 @tailwind utilities;
 
 :root {
-  --brand: #0f4c5c;
-  --brand-dark: #17313a;
-  --brand-soft: #f2c14e;
-  --accent: #e4572e;
-  --surface: #f7f4ed;
+  --background: #F5F2EB;
+  --surface: #F5F2EB;
+  --surface-light: #FCFBF8;
+  --text: #17191C;
+  --primary: #183A44;
+  --brand: #183A44;
+  --brand-dark: #17191C;
+  --accent: #B8543C;
+  --stone: #D7D0C6;
+  --brand-soft: #D7D0C6;
+  --muted: #5E6669;
+  --error: #B42318;
+  --success: #237A48;
+  --font-body: "DM Sans";
   color-scheme: light;
 }
 
 @layer base {
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; min-width: 0; }
   html { scroll-behavior: smooth; }
-  body {
-    margin: 0;
-    min-width: 0;
-    background: var(--surface);
-    color: var(--brand-dark);
-    font-family: "Segoe UI", Arial, system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-  }
+  body { margin: 0; min-width: 0; overflow-x: hidden; background: var(--background); color: var(--text); font-family: var(--font-body), Inter, "Segoe UI", Arial, system-ui, sans-serif; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
   button, input, textarea, select { font: inherit; }
   button, a { -webkit-tap-highlight-color: transparent; }
-  img { max-width: 100%; }
-  ::selection { background: var(--brand-soft); color: var(--brand-dark); }
-  :focus-visible { outline: 3px solid var(--brand-soft); outline-offset: 3px; }
+  img, video { max-width: 100%; }
+  button:disabled { cursor: not-allowed; }
+  ::selection { background: #D9E6E8; color: var(--text); }
+  :focus-visible { outline: 3px solid #C56C55; outline-offset: 3px; }
 }
 
 @layer components {
   .section-container { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8; }
-  .font-display { font-family: "Segoe UI", Arial, system-ui, sans-serif; }
+  .font-display { font-family: "DM Sans", Inter, "Segoe UI", Arial, system-ui, sans-serif; }
   .text-balance { text-wrap: balance; }
-  .glass-card { @apply rounded-2xl border border-[#17313a]/10 bg-white shadow-sm; }
+  .eyebrow { @apply text-xs font-semibold uppercase tracking-[.16em] text-[var(--accent)]; }
+  .section-heading { @apply max-w-2xl; }
+  .section-heading h2 { @apply mt-2 font-display text-3xl font-semibold tracking-[-.025em] sm:text-4xl; }
+  .section-heading > p:last-child:not(:first-child) { @apply mt-3 leading-7 text-[var(--muted)]; }
+
+  .button-primary, .button-secondary, .button-outline, .button-on-media { @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition duration-200; }
+  .button-primary { @apply bg-[var(--accent)] text-white hover:bg-[#9E432F]; }
+  .button-secondary { @apply bg-[var(--primary)] text-white hover:bg-[#102F37]; }
+  .button-outline { @apply border border-[var(--stone)] bg-white text-[var(--text)] hover:border-[var(--primary)]; }
+  .button-on-media { @apply border border-white/45 bg-black/15 text-white backdrop-blur-sm hover:bg-white hover:text-[var(--text)]; }
+  .text-link { @apply inline-flex min-h-11 items-center gap-2 py-2 text-sm font-semibold text-[var(--primary)] underline decoration-[var(--stone)] underline-offset-4 hover:decoration-[var(--primary)]; }
+  .round-control { @apply grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[var(--stone)] bg-[var(--surface-light)] text-[var(--text)] transition hover:border-[var(--primary)] disabled:opacity-35; }
+  .tag { @apply inline-flex rounded-full border border-[var(--stone)] bg-[var(--background)] px-3 py-1.5 text-xs font-semibold text-[var(--muted)]; }
+
+  .service-card { @apply grid min-h-28 grid-cols-[108px_1fr] overflow-hidden rounded-2xl border border-[var(--stone)] bg-[var(--background)] transition hover:-translate-y-0.5 hover:border-[var(--primary)] hover:shadow-md sm:grid-cols-[128px_1fr]; }
+  .service-card > img { @apply h-full min-h-28 w-full object-cover; }
+  .service-card strong { @apply font-semibold leading-tight; }
+  .service-card b { @apply shrink-0 text-sm font-semibold text-[var(--accent)]; }
+  .info-row { @apply flex items-start gap-3; }
+  .info-row > svg, .detail-row > svg { @apply mt-0.5 h-5 w-5 shrink-0 text-[var(--accent)]; }
+  .info-row dt, .detail-row strong { @apply block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]; }
+  .info-row dd, .detail-row span { @apply mt-1 leading-6; }
+  .detail-row { @apply flex items-start gap-3 text-sm; }
+
+  .booking-progress { @apply mx-auto mt-3 max-w-5xl; }
+  .booking-title { @apply font-display text-2xl font-semibold tracking-[-.02em] sm:text-3xl; }
+  .booking-description { @apply mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]; }
+  .booking-option { @apply relative rounded-2xl border-2 border-[var(--stone)] bg-[var(--surface-light)] transition hover:border-[var(--primary)] focus-visible:outline-offset-1; }
+  .booking-option-active { @apply border-[var(--accent)] bg-[#FFF7F2] shadow-sm; }
+  .selection-mark { @apply grid h-6 w-6 shrink-0 place-items-center rounded-full border border-[var(--stone)] text-transparent; }
+  .selection-mark-active { @apply border-[var(--accent)] bg-[var(--accent)] text-white; }
+  .form-control { @apply min-h-12 w-full rounded-xl border border-[var(--stone)] bg-white px-4 py-3 text-base text-[var(--text)] outline-none transition placeholder:text-[#7A8285] focus:border-[var(--primary)] focus:ring-4 focus:ring-[#183A44]/10; }
+  .calendar { @apply rounded-2xl border border-[var(--stone)] bg-[var(--surface-light)] p-4 sm:p-5; }
+  .calendar-day { @apply relative grid aspect-square min-h-10 place-items-center rounded-xl border border-transparent text-sm font-medium transition hover:border-[var(--primary)] disabled:text-[#9A9FA0] disabled:hover:border-transparent; }
+  .calendar-day-active { @apply bg-[var(--accent)] text-white shadow-sm disabled:text-white; }
+  .calendar-day-today:not(.calendar-day-active)::after { content: ""; @apply absolute bottom-1.5 h-1 w-1 rounded-full bg-[var(--accent)]; }
+  .time-button { @apply min-h-12 rounded-xl border border-[var(--stone)] bg-white px-2 text-sm font-semibold transition hover:border-[var(--primary)]; }
+  .time-button-active { @apply border-[var(--primary)] bg-[var(--primary)] text-white; }
+  .summary-label { @apply text-[11px] font-semibold uppercase tracking-[.12em] text-[var(--muted)]; }
+  .summary-value { @apply mt-1 font-semibold; }
+
+  .glass-card { @apply rounded-2xl border border-slate-200 bg-white shadow-sm; }
   .glass-card-hover { @apply glass-card transition duration-200 hover:-translate-y-0.5 hover:shadow-lg; }
   .admin-card { @apply rounded-2xl border border-slate-200 bg-white shadow-sm; }
-  .admin-input { @apply block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0f4c5c] focus:ring-4 focus:ring-[#0f4c5c]/10; }
+  .admin-input { @apply block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#183A44] focus:ring-4 focus:ring-[#183A44]/10; }
   .badge { @apply inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold; }
   .badge-confirmed { @apply border-emerald-200 bg-emerald-50 text-emerald-800; }
   .badge-pending { @apply border-amber-200 bg-amber-50 text-amber-800; }
@@ -45,31 +88,26 @@
   .badge-completed { @apply border-blue-200 bg-blue-50 text-blue-800; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+.hero-media-fade, .barber-photo-fade { animation: media-fade .45s ease-out both; }
+@keyframes media-fade { from { opacity: .35; transform: scale(1.01); } to { opacity: 1; transform: scale(1); } }
+
+@media (max-width: 639px) {
+  .calendar { padding: .75rem; }
+  .calendar-day { min-height: 2.5rem; border-radius: .65rem; }
 }
 
-/* Legacy admin screens now inherit the light, practical operations theme. */
-.admin-shell main p[class~="text-white"],
-.admin-shell main h2[class~="text-white"],
-.admin-shell main h3[class~="text-white"],
-.admin-shell main span[class~="text-white"],
-.admin-shell main div[class~="text-white"],
-.admin-shell main td[class~="text-white"] { color: #0f172a !important; }
-.admin-shell main input[class~="text-white"],
-.admin-shell main select[class~="text-white"],
-.admin-shell main textarea[class~="text-white"] { color: #0f172a !important; }
-.admin-shell main [class~="text-slate-200"],
-.admin-shell main [class~="text-slate-300"] { color: #334155 !important; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+
+/* Pantallas administrativas heredadas: tema operativo claro. */
+.admin-shell main p[class~="text-white"], .admin-shell main h2[class~="text-white"], .admin-shell main h3[class~="text-white"], .admin-shell main span[class~="text-white"], .admin-shell main div[class~="text-white"], .admin-shell main td[class~="text-white"] { color: #0f172a !important; }
+.admin-shell main input[class~="text-white"], .admin-shell main select[class~="text-white"], .admin-shell main textarea[class~="text-white"] { color: #0f172a !important; }
+.admin-shell main [class~="text-slate-200"], .admin-shell main [class~="text-slate-300"] { color: #334155 !important; }
 .admin-shell main [class~="text-slate-400"] { color: #475569 !important; }
-.admin-shell main [class~="border-white/5"],
-.admin-shell main [class~="border-white/10"] { border-color: #e2e8f0 !important; }
+.admin-shell main [class~="border-white/5"], .admin-shell main [class~="border-white/10"] { border-color: #e2e8f0 !important; }
 .admin-shell main [class~="divide-white/5"] > :not([hidden]) ~ :not([hidden]) { border-color: #e2e8f0 !important; }
-.admin-shell main [class~="bg-slate-800/50"],
-.admin-shell main [class~="bg-slate-800"],
-.admin-shell main [class~="bg-slate-900"] { background-color: #fff !important; }
-.admin-shell main [class~="bg-slate-950/40"],
-.admin-shell main [class~="bg-white/[0.02]"],
-.admin-shell main [class~="bg-white/[0.03]"] { background-color: #f8fafc !important; }
+.admin-shell main [class~="bg-slate-800/50"], .admin-shell main [class~="bg-slate-800"], .admin-shell main [class~="bg-slate-900"] { background-color: #fff !important; }
+.admin-shell main [class~="bg-slate-950/40"], .admin-shell main [class~="bg-white/[0.02]"], .admin-shell main [class~="bg-white/[0.03]"] { background-color: #f8fafc !important; }
 .admin-shell main [class~="[color-scheme:dark]"] { color-scheme: light !important; }

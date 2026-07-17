@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getTenantContext } from '../services/api';
 import type { TenantContextData } from '../types';
 import { TenantContext, type TenantState } from './tenant-context';
@@ -15,6 +15,8 @@ const fallback: TenantContextData = {
   branding: null,
   locations: [],
   settings: [],
+  paymentOptions: { cash: true, online: false, provider: null },
+  bookingRules: { minimumNoticeMinutes: 120, maxAdvanceDays: 90, changeCutoffHours: 2, holdMinutes: 30 },
 };
 
 export function TenantProvider({ children }: { children: React.ReactNode }) {
@@ -32,12 +34,15 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     const branding = state.tenant.branding;
     if (!branding) return;
     const root = document.documentElement;
+    root.style.setProperty('--primary', branding.primaryColor);
+    root.style.setProperty('--text', branding.secondaryColor);
+    root.style.setProperty('--accent', branding.accentColor);
+    root.style.setProperty('--background', branding.backgroundColor);
     root.style.setProperty('--brand', branding.primaryColor);
     root.style.setProperty('--brand-dark', branding.secondaryColor);
-    root.style.setProperty('--brand-soft', branding.accentColor);
     root.style.setProperty('--surface', branding.backgroundColor);
+    root.style.setProperty('--font-body', branding.fontFamily);
   }, [state.tenant]);
 
-  const value = useMemo(() => state, [state]);
-  return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>;
+  return <TenantContext.Provider value={state}>{children}</TenantContext.Provider>;
 }

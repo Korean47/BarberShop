@@ -19,14 +19,24 @@ export class StripePaymentProvider implements PaymentProvider {
   private readonly stripe = new Stripe(env.STRIPE_SECRET_KEY!);
 
   async createPayment(input: CreatePaymentInput) {
-    const intent = await this.stripe.paymentIntents.create({
-      amount: input.amountCents,
-      currency: input.currency.toLowerCase(),
-      automatic_payment_methods: { enabled: true },
+    const session = await this.stripe.checkout.sessions.create({
+      mode: 'payment',
+      line_items: [{
+        quantity: 1,
+        price_data: {
+          currency: input.currency.toLowerCase(),
+          unit_amount: input.amountCents,
+          product_data: { name: input.description },
+        },
+      }],
+      customer_email: input.customerEmail,
       metadata: { appointmentId: input.appointmentId },
+      success_url: input.successUrl,
+      cancel_url: input.cancelUrl,
+      expires_at: Math.floor(input.expiresAt.getTime() / 1000),
     }, { idempotencyKey: input.idempotencyKey });
-    if (!intent.client_secret) throw new Error('Stripe did not return a client secret');
-    return { providerPaymentId: intent.id, clientSecret: intent.client_secret };
+    if (!session.url) throw new Error('Stripe did not return a checkout URL');
+    return { providerPaymentId: session.id, checkoutUrl: session.url, expiresAt: input.expiresAt };
   }
 
   verifyWebhook(payload: Buffer, signature: string | undefined): VerifiedWebhookEvent {
@@ -38,12 +48,12 @@ export class StripePaymentProvider implements PaymentProvider {
       throw forbidden('INVALID_WEBHOOK_SIGNATURE', 'Firma de webhook inválida');
     }
 
-    if (event.type === 'payment_intent.succeeded' || event.type === 'payment_intent.payment_failed') {
-      const intent = event.data.object;
+    if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.expired') {
+      const session = event.data.object;
       return {
         id: event.id,
-        type: event.type === 'payment_intent.succeeded' ? 'payment.paid' : 'payment.failed',
-        data: { providerPaymentId: intent.id },
+        type: event.type === 'checkout.session.completed' ? 'payment.paid' : 'payment.failed',
+        data: { providerPaymentId: session.id },
       };
     }
 

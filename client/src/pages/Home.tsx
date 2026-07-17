@@ -1,117 +1,154 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CalendarCheck2, Check, Clock3, MapPin, Phone, Scissors, Star } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Clock3, MapPin, Phone, Scissors } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useReducedMotion } from 'framer-motion';
+import { HeroMedia } from '../components/home/HeroMedia';
 import { getBarbers, getServices } from '../services/api';
 import { useTenant } from '../hooks/useTenant';
 import type { Barber, Service } from '../types';
 import { formatDuration, formatPrice, parseSpecialties } from '../utils/helpers';
 
+function servicePrice(service: Service) {
+  const price = formatPrice(service.price);
+  if (service.priceType === 'starting_at') return `Desde ${price}`;
+  if (service.priceType === 'estimate') return `Aprox. ${price}`;
+  if (service.priceType === 'confirm') return 'Por confirmar';
+  return price;
+}
+
+function scheduleSummary(schedules: { dayOfWeek: number; startMinute: number; endMinute: number; isOpen: boolean }[]) {
+  const open = schedules.filter((item) => item.isOpen);
+  if (!open.length) return 'Consulta los horarios disponibles al reservar';
+  const minute = (value: number) => `${Math.floor(value / 60)}:${String(value % 60).padStart(2, '0')}`;
+  const weekdays = open.filter((item) => item.dayOfWeek >= 1 && item.dayOfWeek <= 5);
+  const saturday = open.find((item) => item.dayOfWeek === 6);
+  const parts: string[] = [];
+  if (weekdays.length) parts.push(`Lun–Vie ${minute(weekdays[0].startMinute)}–${minute(weekdays[0].endMinute)}`);
+  if (saturday) parts.push(`Sáb ${minute(saturday.startMinute)}–${minute(saturday.endMinute)}`);
+  return parts.join(' · ') || 'Consulta los horarios disponibles al reservar';
+}
+
 export function Home() {
   const { tenant } = useTenant();
+  const reducedMotion = useReducedMotion() ?? false;
   const [services, setServices] = useState<Service[]>([]);
   const [barbers, setBarbers] = useState<Barber[]>([]);
+  const [activeBarber, setActiveBarber] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
 
   useEffect(() => {
     Promise.all([getServices(), getBarbers()])
       .then(([serviceList, barberList]) => { setServices(serviceList); setBarbers(barberList); })
-      .catch(() => toast.error('No pudimos actualizar los cortes y horarios'));
+      .catch(() => toast.error('No pudimos actualizar los servicios y horarios'));
   }, []);
 
   const location = tenant.locations.find((item) => item.isDefault) ?? tenant.locations[0];
-  const address = location ? `${location.addressLine1}, ${location.city}` : 'Hermosillo, Sonora';
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+  const address = location ? [location.addressLine1, location.addressLine2, `${location.city}, ${location.state}`].filter(Boolean).join(', ') : 'Ubicación por confirmar';
+  const mapsUrl = location?.mapsUrl || tenant.branding?.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+  const currentBarber = barbers[activeBarber];
+  const heroTitle = tenant.branding?.heroTitle || 'Cortes y barba, con tiempo para hacerlo bien.';
+  const heroSubtitle = tenant.branding?.heroSubtitle || 'Elige servicio, barbero y horario. Tu cita queda lista en pocos pasos.';
+  const availableServices = services.slice(0, 6);
+
+  const moveBarber = (direction: number) => {
+    if (!barbers.length) return;
+    setActiveBarber((current) => (current + direction + barbers.length) % barbers.length);
+  };
 
   return (
     <>
-      <section className="overflow-hidden bg-[#fffaf0] pb-12 pt-6 sm:pb-16 sm:pt-10 lg:pb-20">
-        <div className="section-container grid items-center gap-8 lg:grid-cols-[.86fr_1.14fr] lg:gap-12">
-          <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 rounded-lg bg-[#f2c14e]/25 px-3 py-2 text-xs font-black text-[#17313a]">
-              <Star className="h-4 w-4 fill-[#e4572e] text-[#e4572e]" /> Barbería local en Hermosillo
-            </div>
-            <h1 className="text-balance mt-5 text-[2.65rem] font-black leading-[1.02] tracking-[-.04em] text-[#17313a] min-[390px]:text-5xl sm:text-6xl lg:text-[4.6rem]">
-              El corte que quieres, <span className="text-[var(--accent)]">a precio justo.</span>
-            </h1>
-            <p className="mt-5 max-w-xl text-base font-medium leading-7 text-[#526b73] sm:text-lg">Mira los precios, elige a tu barbero y aparta tu hora. Sin llamadas, sin vueltas.</p>
-            <div className="mt-7 flex flex-col gap-3 min-[390px]:flex-row">
-              <Link to="/book" className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-6 font-black text-white shadow-md transition hover:-translate-y-0.5 hover:bg-[#c94725]">
-                Agendar cita <ArrowRight className="h-5 w-5" />
-              </Link>
-              <a href="#services" className="inline-flex min-h-[52px] items-center justify-center rounded-xl border-2 border-[#17313a]/15 bg-white px-6 font-bold text-[#17313a] hover:border-[var(--brand)]">Ver cortes y precios</a>
-            </div>
-            <div className="mt-7 grid max-w-xl gap-2 text-sm font-semibold text-[#526b73] min-[390px]:grid-cols-2">
-              <span className="flex items-center gap-2"><Clock3 className="h-4 w-4 text-[var(--brand)]" /> Lun–Vie 8:00–20:00</span>
-              <span className="flex items-center gap-2"><MapPin className="h-4 w-4 text-[var(--brand)]" /> {address}</span>
+      <section className="relative isolate min-h-[calc(100svh-64px)] overflow-hidden bg-[var(--text)] text-white sm:min-h-[calc(100svh-68px)]">
+        <HeroMedia
+          videoUrl={tenant.branding?.heroVideoUrl}
+          mobileVideoUrl={tenant.branding?.heroMobileVideoUrl}
+          posterUrl={tenant.branding?.heroPosterUrl}
+          imageUrl={tenant.branding?.heroImageUrl}
+          fallbackUrls={tenant.branding?.heroFallbackUrls}
+          reducedMotion={reducedMotion}
+          alt="Interior de la barbería durante un servicio"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(12,20,23,.9)_0%,rgba(12,20,23,.68)_48%,rgba(12,20,23,.2)_100%)]" />
+        <div className="section-container relative z-10 flex min-h-[calc(100svh-64px)] items-end pb-[max(3rem,env(safe-area-inset-bottom))] pt-20 sm:min-h-[calc(100svh-68px)] sm:items-center sm:py-20">
+          <div className="max-w-2xl">
+            <p className="flex items-center gap-2 text-sm font-semibold tracking-wide text-white/80"><Scissors className="h-4 w-4 text-[#D7D0C6]" /> {tenant.name}</p>
+            <h1 className="mt-5 text-balance font-display text-[clamp(2.7rem,9vw,5.8rem)] font-semibold leading-[.96] tracking-[-.045em]">{heroTitle}</h1>
+            <p className="mt-5 max-w-xl text-[clamp(1rem,2vw,1.2rem)] leading-7 text-white/82">{heroSubtitle}</p>
+            <div className="mt-8 flex flex-col gap-3 min-[390px]:flex-row">
+              <Link to="/book" className="button-primary min-h-[52px] px-6">Agendar cita <ArrowRight className="h-5 w-5" /></Link>
+              <Link to="/appointment" className="button-on-media min-h-[52px] px-6">Consultar mi cita</Link>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="relative">
-            <div className="absolute -right-12 -top-10 h-52 w-52 rounded-full bg-[#f2c14e]/35 blur-3xl" />
-            <div className="relative overflow-hidden rounded-2xl border-4 border-white bg-white shadow-xl sm:rounded-3xl">
-              <img src={tenant.branding?.heroImageUrl ?? '/images/hero-local.webp'} alt="Barbero joven atendiendo a un cliente en una barbería local" width="1600" height="900" fetchPriority="high" className="aspect-[16/11] w-full object-cover object-center sm:aspect-[16/10] lg:aspect-[4/3]" />
-              <div className="absolute inset-x-3 bottom-3 flex items-center justify-between gap-3 rounded-xl bg-white/95 p-3 shadow-lg backdrop-blur sm:inset-x-5 sm:bottom-5 sm:p-4">
-                <div className="min-w-0">
-                  <p className="flex items-center gap-1.5 text-xs font-black text-[var(--brand)]"><CalendarCheck2 className="h-4 w-4" /> Reserva en línea</p>
-                  <p className="mt-0.5 truncate text-sm font-bold sm:text-base">Ve los horarios disponibles</p>
+      <section id="services" className="scroll-mt-20 bg-[var(--surface-light)] py-16 sm:py-24">
+        <div className="section-container">
+          <div className="section-heading"><p className="eyebrow">Servicios</p><h2>Opciones y precios claros</h2><p>Selecciona un servicio para comenzar la reserva. La disponibilidad se calcula con la agenda de cada barbero.</p></div>
+          <div className="mt-9 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {availableServices.map((service) => (
+              <Link key={service.id} to={`/book?service=${service.id}`} className="service-card group">
+                <img src={service.imageUrl || '/images/corte-clasico.webp'} alt={`Referencia de ${service.name}`} width="720" height="540" loading="lazy" />
+                <span className="min-w-0 p-4">
+                  <span className="flex items-start justify-between gap-3"><strong>{service.name}</strong><b>{servicePrice(service)}</b></span>
+                  <span className="mt-3 flex items-center justify-between text-sm text-[var(--muted)]"><span className="flex items-center gap-1.5"><Clock3 className="h-4 w-4" /> {formatDuration(service.duration)}</span><ArrowRight className="h-4 w-4 text-[var(--accent)] transition-transform group-hover:translate-x-1" /></span>
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="barbers" className="scroll-mt-20 bg-[var(--background)] py-16 sm:py-24">
+        <div className="section-container">
+          <div className="section-heading"><p className="eyebrow">Barberos</p><h2>Elige quién te atiende</h2><p>Cada perfil indica los servicios que realiza. También puedes seleccionar al primero disponible durante la reserva.</p></div>
+          {currentBarber && (
+            <div
+              className="mt-9 overflow-hidden rounded-[1.5rem] border border-[var(--stone)] bg-[var(--surface-light)] lg:grid lg:grid-cols-[1.08fr_.92fr]"
+              onTouchStart={(event) => setTouchStart(event.touches[0].clientX)}
+              onTouchEnd={(event) => {
+                if (touchStart === null) return;
+                const distance = event.changedTouches[0].clientX - touchStart;
+                if (Math.abs(distance) > 45) moveBarber(distance > 0 ? -1 : 1);
+                setTouchStart(null);
+              }}
+            >
+              <img key={currentBarber.id} src={currentBarber.photo} alt={`Retrato de ${currentBarber.name}`} width="900" height="900" className="barber-photo-fade aspect-[4/3] h-full w-full object-cover lg:aspect-auto lg:min-h-[520px]" />
+              <div className="flex min-w-0 flex-col justify-center p-6 sm:p-10 lg:p-14">
+                <p className="eyebrow">Barbero {activeBarber + 1} de {barbers.length}</p>
+                <h3 className="mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">{currentBarber.name}</h3>
+                <p className="mt-5 leading-7 text-[var(--muted)]">{currentBarber.bio}</p>
+                <div className="mt-5 flex flex-wrap gap-2">{parseSpecialties(currentBarber.specialties).map((item) => <span key={item} className="tag">{item}</span>)}</div>
+                <Link to={`/book?barber=${currentBarber.id}`} className="mt-7 inline-flex min-h-12 w-fit items-center gap-2 rounded-full border border-[var(--primary)] px-5 font-semibold text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white">Elegir a {currentBarber.name.split(' ')[0]} <ArrowRight className="h-4 w-4" /></Link>
+                <div className="mt-8 flex items-center gap-2" aria-label="Cambiar barbero">
+                  <button type="button" className="round-control" onClick={() => moveBarber(-1)} aria-label="Barbero anterior"><ArrowLeft className="h-5 w-5" /></button>
+                  <div className="flex gap-2" aria-hidden="true">{barbers.map((barber, index) => <span key={barber.id} className={`h-1.5 rounded-full transition-all ${index === activeBarber ? 'w-8 bg-[var(--accent)]' : 'w-1.5 bg-[var(--stone)]'}`} />)}</div>
+                  <button type="button" className="round-control" onClick={() => moveBarber(1)} aria-label="Barbero siguiente"><ArrowRight className="h-5 w-5" /></button>
                 </div>
-                <Link to="/book" aria-label="Agendar una cita" className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[var(--brand)] text-white"><ArrowRight className="h-5 w-5" /></Link>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 
-      <section id="services" className="scroll-mt-20 bg-white py-14 sm:py-20">
-        <div className="section-container">
-          <div className="max-w-2xl">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--accent)]">Cortes y precios</p>
-            <h2 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Elige lo que te queda bien</h2>
-            <p className="mt-3 text-base leading-7 text-[#587078]">Sin paquetes raros ni precios escondidos. Lo que ves es lo que pagas.</p>
+      <section id="location" className="scroll-mt-20 bg-[var(--surface-light)] py-16 sm:py-24">
+        <div className="section-container grid gap-8 lg:grid-cols-[.95fr_1.05fr] lg:items-center">
+          <div>
+            <div className="section-heading"><p className="eyebrow">Ubicación</p><h2>Información para tu visita</h2></div>
+            <dl className="mt-7 space-y-5">
+              <div className="info-row"><MapPin /><div><dt>Dirección</dt><dd>{address}</dd></div></div>
+              <div className="info-row"><Clock3 /><div><dt>Horarios</dt><dd>{scheduleSummary(location?.businessSchedules || [])}</dd></div></div>
+              {(location?.phone || tenant.contactPhone) && <div className="info-row"><Phone /><div><dt>Contacto</dt><dd>{location?.phone || tenant.contactPhone}</dd></div></div>}
+            </dl>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a href={mapsUrl} target="_blank" rel="noreferrer" className="button-secondary">Cómo llegar <ArrowRight className="h-4 w-4" /></a>
+              {tenant.branding?.whatsappUrl && <a href={tenant.branding.whatsappUrl} target="_blank" rel="noreferrer" className="text-link">WhatsApp</a>}
+            </div>
           </div>
-          <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {services.map((service) => (
-              <Link key={service.id} to={`/book?service=${service.id}`} className="group grid min-h-32 grid-cols-[112px_1fr] overflow-hidden rounded-2xl border border-[#17313a]/10 bg-[#fffaf0] shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--brand)]/30 hover:shadow-md sm:grid-cols-[136px_1fr]">
-                <img src={service.imageUrl ?? '/images/corte-clasico.webp'} alt={service.name} width="720" height="540" loading="lazy" className="h-full min-h-32 w-full object-cover" />
-                <div className="flex min-w-0 flex-col p-4">
-                  <div className="flex items-start justify-between gap-2"><h3 className="font-black leading-tight">{service.name}</h3><span className="shrink-0 text-base font-black text-[var(--accent)]">{formatPrice(service.price)}</span></div>
-                  <p className="mt-2 line-clamp-2 flex-1 text-sm leading-5 text-[#587078]">{service.description}</p>
-                  <div className="mt-3 flex items-center justify-between text-xs font-bold text-[#587078]"><span>{formatDuration(service.duration)}</span><span className="flex items-center gap-1 text-[var(--brand)]">Elegir <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-1" /></span></div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="team" className="scroll-mt-20 bg-[#eaf4f5] py-14 sm:py-20">
-        <div className="section-container">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div><p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--brand)]">La banda</p><h2 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Barberos que sí te escuchan</h2></div>
-            <p className="max-w-md text-sm leading-6 text-[#587078]">Elige a quien ya conoces o marca “cualquiera” para encontrar hora más rápido.</p>
-          </div>
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
-            {barbers.map((barber) => (
-              <article key={barber.id} className="overflow-hidden rounded-2xl border border-[#17313a]/10 bg-white shadow-sm">
-                <Link to={`/barbers/${barber.id}`} className="block"><img src={barber.photo} alt={`Retrato de ${barber.name}`} loading="lazy" width="640" height="640" className="aspect-square w-full object-cover transition duration-300 hover:scale-[1.02]" /></Link>
-                <div className="p-3 sm:p-4"><h3 className="font-black leading-tight">{barber.name}</h3><p className="mt-1 line-clamp-1 text-xs text-[#587078] sm:text-sm">{parseSpecialties(barber.specialties).slice(0, 2).join(' · ')}</p><Link to={`/book?barber=${barber.id}`} className="mt-3 inline-flex min-h-10 w-full items-center justify-center rounded-xl bg-[#eaf4f5] px-3 text-xs font-black text-[var(--brand)] hover:bg-[#d5ecef]">Agendar con {barber.name.split(' ')[0]}</Link></div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-[var(--brand)] py-14 text-white sm:py-18">
-        <div className="section-container grid gap-8 lg:grid-cols-[1fr_.9fr] lg:items-center">
-          <div><Scissors className="h-8 w-8 text-[var(--brand-soft)]" /><h2 className="mt-4 max-w-2xl text-3xl font-black tracking-tight sm:text-4xl">Una cita clara de principio a fin</h2><div className="mt-5 grid gap-3 sm:grid-cols-3">{['Sin crear cuenta', 'Precio confirmado', 'Cambia o cancela fácil'].map((text) => <p key={text} className="flex items-center gap-2 text-sm font-bold"><span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-white/15"><Check className="h-4 w-4 text-[var(--brand-soft)]" /></span>{text}</p>)}</div></div>
-          <div className="rounded-2xl bg-white p-5 text-[#17313a] sm:p-6"><p className="text-sm font-black uppercase tracking-[0.14em] text-[var(--accent)]">¿Listo para un cambio?</p><p className="mt-2 text-xl font-black">Aparta tu silla en menos de dos minutos.</p><Link to="/book" className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-5 font-black text-white">Agendar cita <ArrowRight className="h-5 w-5" /></Link></div>
-        </div>
-      </section>
-
-      <section className="py-14 sm:py-18">
-        <div className="section-container grid gap-6 rounded-2xl border border-[#17313a]/10 bg-white p-5 sm:grid-cols-[1fr_auto] sm:items-center sm:p-8">
-          <div><div className="flex items-center gap-2 text-[var(--accent)]"><MapPin className="h-6 w-6" /><span className="text-xs font-black uppercase tracking-[0.16em]">Encuéntranos</span></div><h2 className="mt-3 text-2xl font-black sm:text-3xl">Estamos cerca. Pasa cuando te toque.</h2><p className="mt-2 text-[#587078]">{address} · {tenant.contactPhone ?? 'Atención por cita'}</p></div>
-          <div className="flex flex-col gap-2 min-[390px]:flex-row"><a href={mapsUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-[#17313a]/15 px-5 font-bold"><MapPin className="h-4 w-4" /> Abrir mapa</a>{tenant.contactPhone && <a href={`tel:${tenant.contactPhone}`} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[var(--brand)] px-5 font-bold text-white"><Phone className="h-4 w-4" /> Llamar</a>}</div>
+          <a href={mapsUrl} target="_blank" rel="noreferrer" className="group relative min-h-[360px] overflow-hidden rounded-[1.5rem] bg-[var(--stone)] sm:min-h-[480px]" aria-label={`Abrir ubicación de ${tenant.name} en Google Maps`}>
+            <img src={tenant.branding?.shopImageUrl || tenant.branding?.heroImageUrl || '/images/hero-local.webp'} alt={`Exterior o interior de ${tenant.name}`} width="1200" height="900" loading="lazy" className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]" />
+            <span className="absolute inset-x-4 bottom-4 flex items-center justify-between rounded-2xl bg-[var(--surface-light)] p-4 font-semibold text-[var(--text)] shadow-lg sm:inset-x-6 sm:bottom-6"><span className="min-w-0 truncate">Abrir en Google Maps</span><MapPin className="h-5 w-5 shrink-0 text-[var(--accent)]" /></span>
+          </a>
         </div>
       </section>
     </>
