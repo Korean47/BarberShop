@@ -70,7 +70,7 @@ La portada acepta video de escritorio, video móvil, poster e imágenes de respa
 
 ## Notificaciones y acceso a citas
 
-El acceso público requiere código de cita y teléfono, rota el token de gestión y aplica rate limit. El repositorio registra los eventos de notificación, pero el envío real por SMS, WhatsApp o correo requiere conectar un proveedor transaccional antes de prometer OTP o confirmaciones automáticas al cliente.
+El acceso público requiere teléfono y fecha de la cita, rota el token de gestión y aplica rate limit. Si hay varias citas para esos datos, la persona selecciona el horario correcto. El repositorio registra los eventos de notificación, pero el envío real por SMS, WhatsApp o correo requiere conectar un proveedor transaccional antes de prometer OTP o confirmaciones automáticas al cliente.
 
 ## Backup y restauración
 

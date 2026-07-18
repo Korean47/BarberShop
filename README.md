@@ -47,7 +47,7 @@ Desde el panel también se administran categorías y servicios, perfiles de barb
 - Configura dominio HTTPS, CORS/orígenes permitidos y secretos únicos en el gestor de secretos de tu plataforma.
 - Conecta Stripe y registra el webhook público antes de habilitar pago en línea.
 - Usa almacenamiento S3-compatible para referencias fotográficas y aplica su política de retención.
-- Conecta un proveedor transaccional para SMS, WhatsApp o correo. La consulta segura por código + teléfono funciona sin ese proveedor; el envío real de OTP/avisos depende de esta integración.
+- Conecta un proveedor transaccional para SMS, WhatsApp o correo. La consulta por teléfono + fecha de la cita funciona sin ese proveedor, con rate limit y token temporal; el envío real de OTP/avisos depende de esta integración.
 - Sustituye las imágenes o videos de ejemplo por material propio o con licencia y prueba su carga en dispositivos reales.
 - Ejecuta `npm run verify`, migraciones y una prueba de reserva/pago en un entorno de preproducción.
 

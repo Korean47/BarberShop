@@ -265,29 +265,50 @@ export async function getManagedAppointment(tenantId: string, timezone: string, 
 }
 
 export async function accessAppointment(tenant: TenantInput, input: AccessAppointmentInput) {
-  const appointment = await prisma.appointment.findFirst({
+  const localDate = DateTime.fromISO(input.date, { zone: tenant.timezone });
+  if (!localDate.isValid || localDate.toFormat('yyyy-MM-dd') !== input.date) throw notFound('Cita');
+  const phoneDigits = input.phone.replace(/\D/g, '');
+  const phoneSuffix = phoneDigits.slice(-10);
+  const appointments = await prisma.appointment.findMany({
     where: {
       tenantId: tenant.id,
-      publicCode: input.publicCode,
-      customer: { phone: input.phone },
+      startsAt: { gte: localDate.startOf('day').toUTC().toJSDate(), lt: localDate.plus({ days: 1 }).startOf('day').toUTC().toJSDate() },
+      customer: {
+        is: {
+          OR: [
+            { phone: input.phone },
+            { phone: phoneDigits },
+            { phone: { endsWith: phoneSuffix } },
+          ],
+        },
+      },
     },
     include: appointmentInclude,
+    orderBy: { startsAt: 'asc' },
+    take: 10,
   });
-  if (!appointment) throw notFound('Cita');
+  if (appointments.length === 0) throw notFound('Cita');
 
-  const managementToken = randomToken();
-  const expiresAt = DateTime.max(
-    DateTime.utc().plus({ hours: 24 }),
-    DateTime.fromJSDate(appointment.endsAt, { zone: 'utc' }).plus({ days: 7 }),
-  ).toJSDate();
-  await prisma.appointment.update({
+  const matches = appointments.map((appointment) => {
+    const managementToken = randomToken();
+    const expiresAt = DateTime.max(
+      DateTime.utc().plus({ hours: 24 }),
+      DateTime.fromJSDate(appointment.endsAt, { zone: 'utc' }).plus({ days: 7 }),
+    ).toJSDate();
+    return { appointment, managementToken, expiresAt };
+  });
+  await prisma.$transaction(matches.map(({ appointment, managementToken, expiresAt }) => prisma.appointment.update({
     where: { id: appointment.id },
     data: { managementTokenHash: sha256(managementToken), managementTokenExpiresAt: expiresAt },
-  });
-  return {
+  })));
+  const accessMatches = matches.map(({ appointment, managementToken }) => ({
     appointment: toAppointmentDto(appointment, tenant.timezone),
     manageToken: managementToken,
     manageUrl: `/manage/${managementToken}`,
+  }));
+  return {
+    ...accessMatches[0],
+    matches: accessMatches,
   };
 }
 

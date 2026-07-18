@@ -121,9 +121,11 @@ export const rescheduleManagedAppointment = (token: string, date: string, startT
     body: JSON.stringify({ action: 'reschedule', date, startTime }),
   }, true);
 
-export const accessAppointment = (publicCode: string, phone: string) =>
-  fetchJSON<{ appointment: Appointment; manageToken: string; manageUrl: string }>('/public/appointments/access', {
-    method: 'POST', body: JSON.stringify({ publicCode, phone }),
+export interface AppointmentAccessMatch { appointment: Appointment; manageToken: string; manageUrl: string }
+
+export const accessAppointment = (phone: string, date: string) =>
+  fetchJSON<AppointmentAccessMatch & { matches: AppointmentAccessMatch[] }>('/public/appointments/access', {
+    method: 'POST', body: JSON.stringify({ phone, date }),
   }, true);
 
 export const settleSandboxPayment = (paymentId: string, outcome: 'paid' | 'failed') =>

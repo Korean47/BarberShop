@@ -87,7 +87,7 @@ Alcance: sitio público, reservación, consulta de citas, pagos, panel administr
 - Mantener un único llamado principal de reserva en la portada y priorizar “Mi cita” en navegación.
 - Mover contenido de portada, ubicación, reglas de agenda y disponibilidad de pago a la API pública y al panel.
 - Convertir la reserva en un asistente de seis pasos con encabezado y acciones persistentes, contenido con desplazamiento interno y calendario mensual.
-- Agregar código público de cita + teléfono para emitir un nuevo token opaco, protegido con límites de intentos y respuestas no enumerables.
+- Permitir consulta por teléfono + fecha de la cita para emitir un nuevo token opaco, protegido con límites de intentos y respuestas no enumerables; si existen varias citas ese día, presentar una selección de horarios.
 - Aplicar en servidor la anticipación, ventana máxima y margen de cambio/cancelación.
 - Ocultar pago en línea cuando no haya proveedor explícitamente disponible; cuando exista, usar checkout alojado o sandbox, importe calculado en servidor, webhook firmado, idempotencia y retención con expiración.
 - Añadir endpoints administrativos reales para contenido, negocio, reglas, categorías, catálogo, disponibilidad del equipo y pagos; marcar claramente inventario y documentos como módulos demostrativos fuera del núcleo transaccional.

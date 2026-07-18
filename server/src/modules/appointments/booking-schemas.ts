@@ -33,8 +33,8 @@ export const manageAppointmentSchema = z.discriminatedUnion('action', [
 ]);
 
 export const accessAppointmentSchema = z.object({
-  publicCode: z.string().trim().toUpperCase().regex(/^[A-Z0-9]{6,12}$/),
-  phone: phoneSchema,
+  phone: phoneSchema.refine((value) => value.replace(/\D/g, '').length >= 10, 'Ingresa el número completo'),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 });
 
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;

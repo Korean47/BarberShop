@@ -24,7 +24,7 @@ npm run verify
 - Build cliente y servidor: aprobado.
 - Dependencias de producción: auditoría automatizada en CI para cliente y servidor.
 - Presupuesto inicial: menos de 150 kB gzip; presupuesto de la portada: menos de 200 kB gzip.
-- QA real de reservación: creación, consulta segura, reprogramación, límite tardío y cancelación sincronizada con administración.
+- QA real de reservación: creación, consulta segura por teléfono + fecha (incluidos prefijos distintos y varias citas el mismo día), reprogramación, límite tardío y cancelación sincronizada con administración.
 - QA de pagos: aprobación, rechazo, idempotencia y liberación de horario al vencer la retención.
 - QA administrativo: edición real de categorías/servicios, jornadas semanales, cierres especiales, descansos y ausencias; cada cambio alteró la disponibilidad pública esperada y después se revirtió.
 - QA de caja: movimientos y totales derivados de pagos persistidos, cancelación sincronizada y registro manual auditado de cobros en efectivo.

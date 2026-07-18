@@ -93,7 +93,7 @@ export function ManageAppointment() {
   }
 
   if (loading) return <PageSpinner />;
-  if (!appointment) return <div className="section-container py-20 text-center"><ShieldCheck className="mx-auto h-12 w-12 text-[var(--primary)]" /><h1 className="mt-5 font-display text-4xl font-semibold">Este enlace ya no está disponible</h1><p className="mt-3 text-[var(--muted)]">Consulta la cita nuevamente con su código y teléfono.</p><Link to="/appointment" className="button-secondary mt-7">Consultar mi cita</Link></div>;
+  if (!appointment) return <div className="section-container py-20 text-center"><ShieldCheck className="mx-auto h-12 w-12 text-[var(--primary)]" /><h1 className="mt-5 font-display text-4xl font-semibold">Este enlace ya no está disponible</h1><p className="mt-3 text-[var(--muted)]">Consulta la cita nuevamente con el teléfono asociado y la fecha reservada.</p><Link to="/appointment" className="button-secondary mt-7">Consultar mi cita</Link></div>;
 
   const final = ['cancelled', 'completed', 'no_show'].includes(appointment.status);
   const pendingPayment = appointment.status === 'pending' && appointment.payment?.method === 'online';
