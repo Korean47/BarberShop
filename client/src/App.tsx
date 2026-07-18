@@ -27,6 +27,9 @@ const AdminDocuments = lazy(() => import('./pages/AdminDocuments').then((module)
 const AdminSettings = lazy(() => import('./pages/AdminSettings').then((module) => ({ default: module.AdminSettings })));
 const AdminBilling = lazy(() => import('./pages/AdminBilling').then((module) => ({ default: module.AdminBilling })));
 const NotFound = lazy(() => import('./pages/NotFound').then((module) => ({ default: module.NotFound })));
+const TypographyLab = import.meta.env.DEV
+  ? lazy(() => import('./pages/TypographyLab').then((module) => ({ default: module.TypographyLab })))
+  : null;
 
 function ProtectedRoute() {
   const { session, loading } = useAuth();
@@ -50,6 +53,7 @@ export default function App() {
           />
           <Suspense fallback={<PageSpinner />}>
             <Routes>
+              {TypographyLab && <Route path="/design-system/typography" element={<TypographyLab />} />}
               <Route element={<MainLayout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/book" element={<BookAppointment />} />

@@ -119,7 +119,7 @@ async function main() {
       secondaryColor: '#17191C',
       accentColor: '#B8543C',
       backgroundColor: '#F5F2EB',
-      fontFamily: 'DM Sans',
+      fontFamily: 'contemporary',
       publishedAt: new Date(),
     },
       create: {
@@ -138,7 +138,7 @@ async function main() {
       secondaryColor: '#17191C',
       accentColor: '#B8543C',
       backgroundColor: '#F5F2EB',
-      fontFamily: 'DM Sans',
+      fontFamily: 'contemporary',
       publishedAt: new Date(),
     },
   });

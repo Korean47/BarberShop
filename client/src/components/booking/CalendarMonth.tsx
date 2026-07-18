@@ -87,7 +87,7 @@ export function CalendarMonth({
         <p className="capitalize font-semibold" aria-live="polite">{monthLabel}</p>
         <button type="button" className="round-control" onClick={() => setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1, 12))} disabled={!canNext} aria-label="Mes siguiente"><ChevronRight className="h-5 w-5" /></button>
       </div>
-      <div className="mt-4 grid grid-cols-7" role="row">{weekdayLabels.map((label) => <span key={label} role="columnheader" className="py-2 text-center text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">{label}</span>)}</div>
+      <div className="mt-4 grid grid-cols-7" role="row">{weekdayLabels.map((label) => <span key={label} role="columnheader" className="py-2 text-center text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">{label}</span>)}</div>
       <div className="grid grid-cols-7 gap-1" role="grid">
         {cells.map((date) => {
           const apiDate = formatDateToAPI(date);

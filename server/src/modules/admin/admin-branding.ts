@@ -14,7 +14,7 @@ const brandingSchema = z.object({
   secondaryColor: hex,
   accentColor: hex,
   backgroundColor: hex,
-  fontFamily: z.enum(['Inter', 'DM Sans', 'Playfair Display', 'Cormorant Garamond']),
+  fontFamily: z.enum(['contemporary', 'technical', 'signage']),
   publish: z.boolean().default(false),
 });
 

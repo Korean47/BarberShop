@@ -24,7 +24,7 @@ export function BarberDetails() {
       <div className="mt-6 grid overflow-hidden rounded-2xl border border-[#17313a]/10 bg-white shadow-md lg:grid-cols-[.85fr_1.15fr]">
         <div className="bg-[#dcecef]"><img src={barber.photo} alt={`Retrato de ${barber.name}`} className="aspect-square h-full w-full object-cover lg:aspect-auto lg:min-h-[420px]" /></div>
         <div className="p-7 sm:p-10 lg:p-12">
-          <p className="text-xs font-black uppercase tracking-[.18em] text-[var(--accent)]">Conoce a tu barbero</p>
+          <p className="text-xs font-black uppercase tracking-wider text-[var(--accent)]">Conoce a tu barbero</p>
           <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">{barber.name}</h1>
           <div className="mt-4 flex flex-wrap gap-2">{specialties.map((specialty) => <span key={specialty} className="rounded-lg bg-[#eaf4f5] px-3 py-1.5 text-xs font-bold text-[var(--brand)]">{specialty}</span>)}</div>
           <p className="mt-6 text-base leading-7 text-[#587078]">{barber.bio}</p>

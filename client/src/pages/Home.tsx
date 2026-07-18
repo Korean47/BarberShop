@@ -72,8 +72,8 @@ export function Home() {
         <div className="section-container relative z-10 flex min-h-[calc(100svh-64px)] items-end pb-[max(3rem,env(safe-area-inset-bottom))] pt-20 sm:min-h-[calc(100svh-68px)] sm:items-center sm:py-20">
           <div className="max-w-2xl">
             <p className="flex items-center gap-2 text-sm font-semibold tracking-wide text-white/80"><Scissors className="h-4 w-4 text-[#D7D0C6]" /> {tenant.name}</p>
-            <h1 className="mt-5 text-balance font-display text-[clamp(2.7rem,9vw,5.8rem)] font-semibold leading-[.96] tracking-[-.045em]">{heroTitle}</h1>
-            <p className="mt-5 max-w-xl text-[clamp(1rem,2vw,1.2rem)] leading-7 text-white/82">{heroSubtitle}</p>
+            <h1 className="type-display mt-5 max-w-[13ch] text-balance">{heroTitle}</h1>
+            <p className="type-body-large mt-5 max-w-xl text-white/82">{heroSubtitle}</p>
             <div className="mt-8 flex flex-col gap-3 min-[390px]:flex-row">
               <Link to="/book" className="button-primary min-h-[52px] px-6">Agendar cita <ArrowRight className="h-5 w-5" /></Link>
               <Link to="/appointment" className="button-on-media min-h-[52px] px-6">Consultar mi cita</Link>

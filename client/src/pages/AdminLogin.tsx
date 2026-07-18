@@ -35,7 +35,7 @@ export function AdminLogin() {
     <main className="grid min-h-screen bg-[#f4f7f7] lg:grid-cols-[.9fr_1.1fr]">
       <section className="hidden overflow-hidden bg-[#0f4c5c] p-12 text-white lg:flex lg:flex-col lg:justify-between">
         <div className="flex items-center gap-3 text-2xl font-black"><span className="grid h-11 w-11 place-items-center rounded-xl bg-[#f2c14e] text-[#17313a]"><Scissors className="h-5 w-5" /></span> Blades</div>
-        <div className="max-w-lg"><p className="text-xs font-black uppercase tracking-[.18em] text-[#f2c14e]">Operación diaria</p><h1 className="mt-4 text-5xl font-black leading-[1.02] tracking-tight">La agenda y el negocio, en orden.</h1><p className="mt-5 max-w-md text-base leading-7 text-white/70">Consulta citas, clientes, pagos e inventario desde un panel claro para todo el equipo.</p></div>
+        <div className="max-w-lg"><p className="text-xs font-black uppercase tracking-wider text-[#f2c14e]">Operación diaria</p><h1 className="mt-4 text-5xl font-black leading-[1.02] tracking-tight">La agenda y el negocio, en orden.</h1><p className="mt-5 max-w-md text-base leading-7 text-white/70">Consulta citas, clientes, pagos e inventario desde un panel claro para todo el equipo.</p></div>
         <p className="flex items-center gap-2 text-xs text-white/60"><ShieldCheck className="h-4 w-4" /> Sesión protegida y acceso solo para el equipo</p>
       </section>
       <section className="flex items-center justify-center p-5 sm:p-10">

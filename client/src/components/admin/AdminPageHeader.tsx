@@ -17,7 +17,7 @@ export function AdminPageHeader({
     <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
         {eyebrow && (
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-400">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-brand-400">
             {eyebrow}
           </p>
         )}

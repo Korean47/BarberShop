@@ -2,10 +2,34 @@
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
+    fontSize: {
+      xs: ['var(--text-xs)', { lineHeight: 'var(--line-height-ui)' }],
+      sm: ['var(--text-sm)', { lineHeight: '1.45' }],
+      base: ['var(--text-base)', { lineHeight: 'var(--line-height-body)' }],
+      lg: ['var(--text-lg)', { lineHeight: '1.4' }],
+      xl: ['var(--text-xl)', { lineHeight: 'var(--line-height-heading)' }],
+      '2xl': ['var(--text-2xl)', { lineHeight: 'var(--line-height-heading)' }],
+      '3xl': ['var(--text-3xl)', { lineHeight: 'var(--line-height-tight)' }],
+      '4xl': ['clamp(2.5rem, 2rem + 2vw, 4rem)', { lineHeight: 'var(--line-height-tight)' }],
+      '5xl': ['clamp(3rem, 2.2rem + 3vw, 5rem)', { lineHeight: 'var(--line-height-tight)' }],
+    },
+    fontWeight: {
+      normal: 'var(--font-weight-regular)',
+      medium: 'var(--font-weight-medium)',
+      semibold: 'var(--font-weight-semibold)',
+      bold: 'var(--font-weight-bold)',
+      black: 'var(--font-weight-bold)',
+    },
     extend: {
       fontFamily: {
-        display: ['"Segoe UI"', 'Arial', 'system-ui', 'sans-serif'],
-        body: ['"Segoe UI"', 'Arial', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)'],
+        body: ['var(--font-interface)'],
+        interface: ['var(--font-interface)'],
+      },
+      letterSpacing: {
+        tight: 'var(--tracking-tight)',
+        wide: 'var(--tracking-wide)',
+        wider: 'var(--tracking-wider)',
       },
       colors: {
         brand: {

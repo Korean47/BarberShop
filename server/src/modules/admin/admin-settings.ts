@@ -72,7 +72,7 @@ const settingsSchema = z.object({
     secondaryColor: hex,
     accentColor: hex,
     backgroundColor: hex,
-    fontFamily: z.enum(['Inter', 'DM Sans', 'Source Sans 3', 'system-ui']),
+    fontFamily: z.enum(['contemporary', 'technical', 'signage']),
     publish: z.boolean(),
   }).optional(),
   booking: z.object({

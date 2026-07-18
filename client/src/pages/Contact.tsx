@@ -10,7 +10,7 @@ export function Contact() {
     <div className="section-container py-14 sm:py-20">
       <div className="mx-auto max-w-5xl">
         <div className="max-w-2xl">
-          <p className="text-xs font-black uppercase tracking-[.18em] text-[var(--accent)]">Cómo llegar</p>
+          <p className="text-xs font-black uppercase tracking-wider text-[var(--accent)]">Cómo llegar</p>
           <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">Estamos cerca. Ven cuando te toque.</h1>
           <p className="mt-4 text-base leading-7 text-[#587078]">Agenda antes de venir para encontrar tu silla lista y evitar la espera.</p>
         </div>

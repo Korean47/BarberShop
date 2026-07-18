@@ -35,6 +35,8 @@ npm --prefix server run start
 
 Publicar `client/dist` en CDN y redirigir rutas SPA a `index.html`. El balanceador debe comprobar `/api/health/live`; readiness usa `/api/health/ready`.
 
+Configurar `Cache-Control: public, max-age=31536000, immutable` para `/assets/*` y `/fonts/*`; los nombres contienen hash o versión. Servir `index.html` con `no-cache` para que cada despliegue pueda descubrir los recursos nuevos sin conservar una referencia obsoleta.
+
 ## Nueva barbería
 
 1. Crear `Tenant` con slug, timezone, moneda y locale.

@@ -49,7 +49,7 @@ export function AdminBilling() {
           <section className="admin-card p-6 lg:p-8">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[.18em] text-slate-500">Plan actual</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Plan actual</p>
                 <h2 className="mt-2 text-2xl font-bold text-white">{billing.plan.name}</h2>
                 <p className="mt-2 text-sm text-slate-400">{formatPrice(billing.plan.priceCents / 100)} por mes</p>
               </div>

@@ -73,7 +73,7 @@ export function AdminInventory() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px]">
             <thead>
-              <tr className="border-b border-white/5 text-left text-[11px] uppercase tracking-wider text-slate-500">
+              <tr className="border-b border-white/5 text-left text-xs uppercase tracking-wider text-slate-500">
                 <th className="px-5 py-3 font-medium">Producto</th>
                 <th className="px-5 py-3 font-medium">Categoría</th>
                 <th className="px-5 py-3 font-medium">Existencia</th>
@@ -98,7 +98,7 @@ export function AdminInventory() {
                           style={{ width: `${percentage}%` }}
                         />
                       </div>
-                      <p className="mt-1 text-[10px] text-slate-600">Mínimo: {item.minimum}</p>
+                      <p className="mt-1 text-xs text-slate-600">Mínimo: {item.minimum}</p>
                     </td>
                     <td className="px-5 py-4 text-sm text-slate-300">{formatPrice(item.cost)}</td>
                     <td className="px-5 py-4">

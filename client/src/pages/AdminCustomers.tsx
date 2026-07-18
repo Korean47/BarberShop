@@ -114,7 +114,7 @@ export function AdminCustomers() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px]">
               <thead>
-                <tr className="border-b border-white/5 text-left text-[11px] uppercase tracking-wider text-slate-500">
+                <tr className="border-b border-white/5 text-left text-xs uppercase tracking-wider text-slate-500">
                   <th className="px-5 py-3 font-medium">Cliente</th>
                   <th className="px-5 py-3 font-medium">Última visita</th>
                   <th className="px-5 py-3 font-medium">Visitas</th>

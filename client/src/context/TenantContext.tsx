@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getTenantContext } from '../services/api';
 import type { TenantContextData } from '../types';
+import { normalizeTypographyPackage } from '../config/typography';
 import { TenantContext, type TenantState } from './tenant-context';
 
 const fallback: TenantContextData = {
@@ -32,8 +33,9 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const branding = state.tenant.branding;
-    if (!branding) return;
     const root = document.documentElement;
+    root.dataset.fontPackage = normalizeTypographyPackage(branding?.fontFamily);
+    if (!branding) return;
     root.style.setProperty('--primary', branding.primaryColor);
     root.style.setProperty('--text', branding.secondaryColor);
     root.style.setProperty('--accent', branding.accentColor);
@@ -41,7 +43,6 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     root.style.setProperty('--brand', branding.primaryColor);
     root.style.setProperty('--brand-dark', branding.secondaryColor);
     root.style.setProperty('--surface', branding.backgroundColor);
-    root.style.setProperty('--font-body', branding.fontFamily);
   }, [state.tenant]);
 
   return <TenantContext.Provider value={state}>{children}</TenantContext.Provider>;

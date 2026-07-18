@@ -134,7 +134,7 @@ model TenantBranding {
   secondaryColor  String    @default("#17191C") @db.Char(7)
   accentColor     String    @default("#B8543C") @db.Char(7)
   backgroundColor String    @default("#F5F2EB") @db.Char(7)
-  fontFamily      String    @default("Inter") @db.VarChar(80)
+  fontFamily      String    @default("contemporary") @db.VarChar(80)
   publishedAt     DateTime? @db.Timestamptz(3)
   updatedAt       DateTime  @updatedAt @db.Timestamptz(3)
   tenant          Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
