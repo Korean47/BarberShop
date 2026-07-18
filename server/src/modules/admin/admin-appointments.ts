@@ -85,19 +85,25 @@ export async function updateAppointment(req: Request, res: Response, next: NextF
       throw conflict('INVALID_STATUS_TRANSITION', `No se puede cambiar una cita de ${existing.status} a ${input.status}`);
     }
 
-    const updated = await prisma.appointment.update({
-      where: { id: existing.id, tenantId: tenant.id },
-      data: {
-        ...(input.notes !== undefined ? { notes: input.notes } : {}),
-        ...(input.status && input.status !== existing.status
-          ? {
-              status: input.status,
-              version: { increment: 1 },
-              statusHistory: { create: { fromStatus: existing.status, toStatus: input.status, changedById: req.auth?.userId } },
-            }
-          : {}),
-      },
-      include: appointmentInclude,
+    const updated = await prisma.$transaction(async (tx) => {
+      if (input.status === 'CANCELLED') {
+        await tx.payment.updateMany({ where: { appointmentId: existing.id, status: 'PENDING' }, data: { status: 'CANCELLED' } });
+      }
+      return tx.appointment.update({
+        where: { id: existing.id, tenantId: tenant.id },
+        data: {
+          ...(input.notes !== undefined ? { notes: input.notes } : {}),
+          ...(input.status && input.status !== existing.status
+            ? {
+                status: input.status,
+                ...(input.status === 'CANCELLED' ? { holdExpiresAt: null } : {}),
+                version: { increment: 1 },
+                statusHistory: { create: { fromStatus: existing.status, toStatus: input.status, changedById: req.auth?.userId } },
+              }
+            : {}),
+        },
+        include: appointmentInclude,
+      });
     });
     await recordAudit(req, {
       action: 'appointment.update', resourceType: 'appointment', resourceId: existing.id, result: 'SUCCESS',

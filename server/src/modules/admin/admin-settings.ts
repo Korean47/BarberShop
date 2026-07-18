@@ -21,6 +21,18 @@ const scheduleSchema = z.object({
   endMinute: z.number().int().min(1).max(1440),
   isOpen: z.boolean(),
 }).refine((value) => !value.isOpen || value.endMinute > value.startMinute, 'El horario de cierre debe ser posterior a la apertura');
+const exceptionSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  isOpen: z.boolean(),
+  startMinute: z.number().int().min(0).max(1439).nullable(),
+  endMinute: z.number().int().min(1).max(1440).nullable(),
+  label: z.string().trim().max(160).nullable().or(z.literal('')),
+}).superRefine((value, context) => {
+  if (!value.isOpen) return;
+  if (value.startMinute === null || value.endMinute === null || value.endMinute <= value.startMinute) {
+    context.addIssue({ code: 'custom', path: ['endMinute'], message: 'El horario especial debe incluir apertura y cierre válidos' });
+  }
+});
 
 const settingsSchema = z.object({
   business: z.object({
@@ -41,6 +53,7 @@ const settingsSchema = z.object({
     phone: z.string().trim().max(32).nullable().or(z.literal('')),
     mapsUrl: optionalUrl,
     schedules: z.array(scheduleSchema).max(7),
+    exceptions: z.array(exceptionSchema).max(370).refine((items) => new Set(items.map(({ date }) => date)).size === items.length, 'No repitas fechas especiales'),
   }).optional(),
   branding: z.object({
     logoUrl: assetUrl,
@@ -131,7 +144,7 @@ export async function updateSettings(req: Request, res: Response, next: NextFunc
         });
       }
       if (input.location) {
-        const { schedules, ...location } = input.location;
+        const { schedules, exceptions, ...location } = input.location;
         await tx.location.update({
           where: { id: location.id, tenantId: tenant.id },
           data: {
@@ -147,6 +160,19 @@ export async function updateSettings(req: Request, res: Response, next: NextFunc
             where: { locationId_dayOfWeek: { locationId: location.id, dayOfWeek: schedule.dayOfWeek } },
             update: schedule,
             create: { locationId: location.id, ...schedule },
+          });
+        }
+        await tx.locationScheduleException.deleteMany({ where: { locationId: location.id } });
+        if (exceptions.length) {
+          await tx.locationScheduleException.createMany({
+            data: exceptions.map((exception) => ({
+              locationId: location.id,
+              date: new Date(`${exception.date}T12:00:00.000Z`),
+              isOpen: exception.isOpen,
+              startMinute: exception.isOpen ? exception.startMinute : null,
+              endMinute: exception.isOpen ? exception.endMinute : null,
+              label: exception.label || null,
+            })),
           });
         }
       }

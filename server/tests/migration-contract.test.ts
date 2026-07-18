@@ -12,6 +12,10 @@ describe('database migration contract', () => {
       new URL('../prisma/migrations/20260717000100_customer_experience/migration.sql', import.meta.url),
       'utf8',
     );
+    const reconciliationMigration = await readFile(
+      new URL('../prisma/migrations/20260717000200_reconcile_cancelled_payments/migration.sql', import.meta.url),
+      'utf8',
+    );
     expect(schema).toContain('provider = "postgresql"');
     expect(schema).not.toContain('provider = "sqlite"');
     expect(migration).toContain('Appointment_no_barber_overlap');
@@ -22,5 +26,8 @@ describe('database migration contract', () => {
     expect(experienceMigration).toContain('holdExpiresAt');
     expect(experienceMigration).toContain('LocationScheduleException');
     expect(experienceMigration).toContain('ServicePriceType');
+    expect(reconciliationMigration).toContain('payment."status" = \'PENDING\'');
+    expect(reconciliationMigration).toContain('appointment."status" = \'CANCELLED\'');
+    expect(reconciliationMigration).toContain('SET "status" = \'CANCELLED\'');
   });
 });

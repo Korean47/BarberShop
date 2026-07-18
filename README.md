@@ -37,7 +37,19 @@ Si no usarás Docker, instala PostgreSQL 16, crea la base y el usuario indicados
 - `PAYMENT_PROVIDER=stripe`: producción; requiere `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` y un webhook HTTPS en `/api/webhooks/payments`.
 - `FILE_STORAGE_PROVIDER=local`: desarrollo. En producción usa `s3` y configura las variables `S3_*`.
 
-El video de portada, su versión móvil, poster, imágenes de respaldo, colores, textos, ubicación y reglas de agenda se publican desde **Administración → Configuración**. Usa archivos propios o con licencia y HTTPS en producción.
+La semilla usa `/videos/Horizontal.mp4` en escritorio y `/videos/Vertical.mp4` en móvil, con poster e imágenes de respaldo. El video de portada, su versión móvil, poster, imágenes de respaldo, colores, textos, ubicación y reglas de agenda se publican desde **Administración → Configuración**. Confirma que tienes derechos sobre todo el material y usa HTTPS en producción.
+
+Desde el panel también se administran categorías y servicios, perfiles de barberos, jornadas, descansos, ausencias, horarios semanales de la sucursal y cierres especiales. **Pagos y caja** lee los movimientos persistidos, permite exportarlos y registrar un cobro en efectivo; los pagos en línea sólo cambian mediante el webhook firmado del proveedor.
+
+## Antes de producción
+
+- Usa PostgreSQL administrado con copias de seguridad, TLS y una `DATABASE_URL` exclusiva del entorno.
+- Configura dominio HTTPS, CORS/orígenes permitidos y secretos únicos en el gestor de secretos de tu plataforma.
+- Conecta Stripe y registra el webhook público antes de habilitar pago en línea.
+- Usa almacenamiento S3-compatible para referencias fotográficas y aplica su política de retención.
+- Conecta un proveedor transaccional para SMS, WhatsApp o correo. La consulta segura por código + teléfono funciona sin ese proveedor; el envío real de OTP/avisos depende de esta integración.
+- Sustituye las imágenes o videos de ejemplo por material propio o con licencia y prueba su carga en dispositivos reales.
+- Ejecuta `npm run verify`, migraciones y una prueba de reserva/pago en un entorno de preproducción.
 
 ## Verificación
 

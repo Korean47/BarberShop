@@ -90,7 +90,7 @@ Alcance: sitio público, reservación, consulta de citas, pagos, panel administr
 - Agregar código público de cita + teléfono para emitir un nuevo token opaco, protegido con límites de intentos y respuestas no enumerables.
 - Aplicar en servidor la anticipación, ventana máxima y margen de cambio/cancelación.
 - Ocultar pago en línea cuando no haya proveedor explícitamente disponible; cuando exista, usar checkout alojado o sandbox, importe calculado en servidor, webhook firmado, idempotencia y retención con expiración.
-- Añadir endpoints administrativos reales para contenido, negocio, reglas y catálogo; marcar claramente los módulos que sigan siendo demostrativos.
+- Añadir endpoints administrativos reales para contenido, negocio, reglas, categorías, catálogo, disponibilidad del equipo y pagos; marcar claramente inventario y documentos como módulos demostrativos fuera del núcleo transaccional.
 
 ## Pantallas modificadas
 
@@ -98,11 +98,14 @@ Alcance: sitio público, reservación, consulta de citas, pagos, panel administr
 - Reserva completa y confirmación.
 - Consulta, detalle, reprogramación y cancelación de cita.
 - Configuración administrativa.
-- Nueva gestión administrativa de servicios.
-- Agenda y resumen administrativo cuando requieran exponer pagos o cambios sincronizados.
+- Nueva gestión administrativa de categorías, servicios y su visibilidad pública.
+- Gestión de barberos, servicios asignados, jornadas, descansos y ausencias.
+- Horarios semanales de la sucursal y excepciones de apertura/cierre por fecha.
+- Caja administrativa conectada a pagos reales, con filtros, exportación CSV y registro auditado de cobro en efectivo.
+- Agenda y resumen administrativo sincronizados con pagos, cambios y cancelaciones.
 
 ## Riesgos de partida
 
 - No hay credenciales de Stripe ni un canal SMS/WhatsApp configurado; por seguridad, esas capacidades deben permanecer ocultas hasta completar la configuración.
 - Los videos de portada necesitan archivos optimizados y derechos de uso; la aplicación debe funcionar con imágenes administrables mientras no existan.
-- Inventario, documentos y contabilidad son módulos demostrativos separados del núcleo de reservación y no deben presentarse como información transaccional real.
+- Inventario y documentos son módulos demostrativos separados del núcleo de reservación. La caja de pagos sí utiliza datos transaccionales reales; una integración contable/fiscal completa permanece fuera del alcance.

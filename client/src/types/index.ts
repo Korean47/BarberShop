@@ -175,6 +175,11 @@ export interface AdminSettingsData {
 
 export interface AdminCatalogData {
   categories: { id: string; name: string; sortOrder: number; isActive: boolean }[];
+  defaultLocation: {
+    id: string;
+    name: string;
+    businessSchedules: { dayOfWeek: number; startMinute: number; endMinute: number; isOpen: boolean }[];
+  };
   services: Array<{
     id: string; name: string; description: string; imageUrl: string | null; durationMinutes: number;
     priceCents: number; priceType: 'FIXED' | 'STARTING_AT' | 'ESTIMATE' | 'CONFIRM'; categoryId: string;
@@ -183,6 +188,33 @@ export interface AdminCatalogData {
   barbers: Array<{
     id: string; displayName: string; email: string | null; phone: string | null; photoUrl: string | null;
     bio: string | null; isActive: boolean; serviceIds: string[];
+    schedules: Array<{
+      id?: string; dayOfWeek: number; startMinute: number; endMinute: number; isWorking: boolean;
+      breaks: Array<{ id?: string; startMinute: number; endMinute: number; label: string | null }>;
+    }>;
+    timeOff: Array<{ id?: string; startsAt: string; endsAt: string; reason: string | null }>;
+  }>;
+}
+
+export interface AdminPaymentsData {
+  summary: { count: number; paidCents: number; pendingCents: number; failedCents: number; refundedCents: number };
+  items: Array<{
+    id: string;
+    method: 'cash' | 'online';
+    status: 'pending' | 'authorized' | 'paid' | 'failed' | 'cancelled' | 'refunded' | 'partially_refunded';
+    provider: string | null;
+    providerPaymentId: string | null;
+    amountCents: number;
+    currency: string;
+    createdAt: string;
+    updatedAt: string;
+    appointment: {
+      id: string; publicCode: string; status: AppointmentStatus; startsAt: string;
+      customer: { id: string; name: string; phone: string; email: string | null };
+      barber: { id: string; name: string };
+      location: { id: string; name: string };
+      services: { id: string; name: string }[];
+    };
   }>;
 }
 

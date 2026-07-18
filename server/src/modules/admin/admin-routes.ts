@@ -11,7 +11,8 @@ import {
 } from './admin-appointments.js';
 import { getBranding, updateBranding } from './admin-branding.js';
 import { getSettings, updateSettings } from './admin-settings.js';
-import { createBarber, createService, listCatalog, updateBarber, updateService } from './admin-catalog.js';
+import { createBarber, createCategory, createService, listCatalog, updateBarber, updateCategory, updateService } from './admin-catalog.js';
+import { listPayments, markCashPaymentPaid } from './admin-payments.js';
 
 export const adminRoutes = Router();
 
@@ -26,7 +27,11 @@ adminRoutes.patch('/branding', requireCsrf, requirePermission('settings:write'),
 adminRoutes.get('/settings', requirePermission('settings:read'), getSettings);
 adminRoutes.patch('/settings', requireCsrf, requirePermission('settings:write'), updateSettings);
 adminRoutes.get('/catalog', requirePermission('settings:read'), listCatalog);
+adminRoutes.post('/categories', requireCsrf, requirePermission('settings:write'), createCategory);
+adminRoutes.patch('/categories/:id', requireCsrf, requirePermission('settings:write'), updateCategory);
 adminRoutes.post('/services', requireCsrf, requirePermission('settings:write'), createService);
 adminRoutes.patch('/services/:id', requireCsrf, requirePermission('settings:write'), updateService);
 adminRoutes.post('/barbers', requireCsrf, requirePermission('barbers:write'), createBarber);
 adminRoutes.patch('/barbers/:id', requireCsrf, requirePermission('barbers:write'), updateBarber);
+adminRoutes.get('/payments', requirePermission('appointments:read'), listPayments);
+adminRoutes.patch('/payments/:id/paid', requireCsrf, requirePermission('appointments:write'), markCashPaymentPaid);

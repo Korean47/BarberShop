@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Building2, CalendarClock, CreditCard, Eye, Image, Save } from 'lucide-react';
+import { Building2, CalendarClock, CreditCard, Eye, Image, Plus, Save, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { AdminPageHeader } from '../components/admin/AdminPageHeader';
 import { Button } from '../components/ui/Button';
@@ -18,7 +18,11 @@ type TabId = typeof tabs[number]['id'];
 
 interface SettingsForm {
   business: { name: string; contactEmail: string; contactPhone: string; timezone: string; currency: 'MXN' };
-  location: { id: string; name: string; addressLine1: string; addressLine2: string; city: string; state: string; postalCode: string; phone: string; mapsUrl: string; schedules: AdminSettingsData['locations'][number]['businessSchedules'] };
+  location: {
+    id: string; name: string; addressLine1: string; addressLine2: string; city: string; state: string; postalCode: string; phone: string; mapsUrl: string;
+    schedules: AdminSettingsData['locations'][number]['businessSchedules'];
+    exceptions: Array<{ date: string; isOpen: boolean; startMinute: number | null; endMinute: number | null; label: string }>;
+  };
   branding: {
     logoUrl: string; heroImageUrl: string; heroVideoUrl: string; heroMobileVideoUrl: string; heroPosterUrl: string;
     heroFallbackUrls: string; heroTitle: string; heroSubtitle: string; shopImageUrl: string; mapUrl: string;
@@ -37,7 +41,9 @@ function makeForm(data: AdminSettingsData): SettingsForm {
     business: { name: data.name, contactEmail: data.contactEmail || '', contactPhone: data.contactPhone || '', timezone: data.timezone, currency: 'MXN' },
     location: {
       id: location.id, name: location.name, addressLine1: location.addressLine1, addressLine2: location.addressLine2 || '', city: location.city,
-      state: location.state, postalCode: location.postalCode || '', phone: location.phone || '', mapsUrl: location.mapsUrl || '', schedules: location.businessSchedules,
+      state: location.state, postalCode: location.postalCode || '', phone: location.phone || '', mapsUrl: location.mapsUrl || '',
+      schedules: Array.from({ length: 7 }, (_, dayOfWeek) => location.businessSchedules.find((item) => item.dayOfWeek === dayOfWeek) || { dayOfWeek, startMinute: 540, endMinute: 1020, isOpen: false }),
+      exceptions: location.scheduleExceptions.map((item) => ({ date: item.date.slice(0, 10), isOpen: item.isOpen, startMinute: item.startMinute, endMinute: item.endMinute, label: item.label || '' })),
     },
     branding: {
       logoUrl: branding?.logoUrl || '', heroImageUrl: branding?.heroImageUrl || '', heroVideoUrl: branding?.heroVideoUrl || '', heroMobileVideoUrl: branding?.heroMobileVideoUrl || '',
@@ -77,6 +83,15 @@ export function AdminSettings() {
     } finally { setSaving(false); }
   }
 
+  function addException() {
+    if (!form) return;
+    const used = new Set(form.location.exceptions.map(({ date }) => date));
+    const next = new Date();
+    next.setHours(12, 0, 0, 0);
+    do { next.setDate(next.getDate() + 1); } while (used.has(next.toISOString().slice(0, 10)));
+    setForm({ ...form, location: { ...form.location, exceptions: [...form.location.exceptions, { date: next.toISOString().slice(0, 10), isOpen: false, startMinute: null, endMinute: null, label: 'Cerrado' }] } });
+  }
+
   if (!data || !form) return <PageSpinner />;
   const field = 'admin-input mt-1.5';
 
@@ -90,11 +105,35 @@ export function AdminSettings() {
 
           {activeTab === 'business' && <div className="space-y-6"><div><h2 className="text-lg font-bold">Información del negocio</h2><p className="mt-1 text-sm text-slate-500">Fuente única para la landing, confirmaciones y contacto.</p></div><div className="grid gap-5 sm:grid-cols-2"><label className="text-sm font-semibold">Nombre<input className={field} value={form.business.name} onChange={(event) => setForm({ ...form, business: { ...form.business, name: event.target.value } })} /></label><label className="text-sm font-semibold">Teléfono<input className={field} value={form.business.contactPhone} onChange={(event) => setForm({ ...form, business: { ...form.business, contactPhone: event.target.value } })} /></label><label className="text-sm font-semibold">Correo<input className={field} value={form.business.contactEmail} onChange={(event) => setForm({ ...form, business: { ...form.business, contactEmail: event.target.value } })} /></label><label className="text-sm font-semibold">Zona horaria<select className={field} value={form.business.timezone} onChange={(event) => setForm({ ...form, business: { ...form.business, timezone: event.target.value } })}><option>America/Hermosillo</option><option>America/Mexico_City</option><option>America/Tijuana</option><option>America/Chihuahua</option></select></label><label className="text-sm font-semibold">Sucursal<input className={field} value={form.location.name} onChange={(event) => setForm({ ...form, location: { ...form.location, name: event.target.value } })} /></label><label className="text-sm font-semibold">Dirección<input className={field} value={form.location.addressLine1} onChange={(event) => setForm({ ...form, location: { ...form.location, addressLine1: event.target.value } })} /></label><label className="text-sm font-semibold">Ciudad<input className={field} value={form.location.city} onChange={(event) => setForm({ ...form, location: { ...form.location, city: event.target.value } })} /></label><label className="text-sm font-semibold">Estado<input className={field} value={form.location.state} onChange={(event) => setForm({ ...form, location: { ...form.location, state: event.target.value } })} /></label><label className="text-sm font-semibold sm:col-span-2">Enlace real de Google Maps<input className={field} value={form.location.mapsUrl} onChange={(event) => setForm({ ...form, location: { ...form.location, mapsUrl: event.target.value } })} /></label></div></div>}
 
-          {activeTab === 'schedule' && <div className="space-y-6"><div><h2 className="text-lg font-bold">Reglas de agenda</h2><p className="mt-1 text-sm text-slate-500">Estas reglas se validan en el backend, no solo en la interfaz.</p></div><div className="grid gap-5 sm:grid-cols-2">{([['minimumNoticeMinutes', 'Anticipación mínima (min)'], ['maxAdvanceDays', 'Ventana máxima (días)'], ['changeCutoffHours', 'Margen para cambios (horas)'], ['slotIntervalMinutes', 'Intervalo de horarios (min)'], ['holdMinutes', 'Retención de pago (min)']] as const).map(([key, label]) => <label key={key} className="text-sm font-semibold">{label}<input type="number" min="0" className={field} value={form.booking[key]} onChange={(event) => setForm({ ...form, booking: { ...form.booking, [key]: Number(event.target.value) } })} /></label>)}</div><div><h3 className="font-semibold">Horario semanal</h3><div className="mt-3 grid gap-2 sm:grid-cols-2">{form.location.schedules.map((schedule) => <div key={schedule.dayOfWeek} className="flex items-center justify-between rounded-xl border border-slate-200 p-3 text-sm"><span>{['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][schedule.dayOfWeek]}</span><span className="text-slate-500">{Math.floor(schedule.startMinute / 60)}:{String(schedule.startMinute % 60).padStart(2, '0')}–{Math.floor(schedule.endMinute / 60)}:{String(schedule.endMinute % 60).padStart(2, '0')}</span></div>)}</div></div></div>}
+          {activeTab === 'schedule' && <div className="space-y-7">
+            <div><h2 className="text-lg font-bold">Reglas de agenda</h2><p className="mt-1 text-sm text-slate-500">Las reglas, horarios y cierres se validan en el backend y cambian la disponibilidad pública.</p></div>
+            <div className="grid gap-5 sm:grid-cols-2">{([['minimumNoticeMinutes', 'Anticipación mínima (min)'], ['maxAdvanceDays', 'Ventana máxima (días)'], ['changeCutoffHours', 'Margen para cambios (horas)'], ['slotIntervalMinutes', 'Intervalo de horarios (min)'], ['holdMinutes', 'Retención de pago (min)']] as const).map(([key, label]) => <label key={key} className="text-sm font-semibold">{label}<input type="number" min="0" className={field} value={form.booking[key]} onChange={(event) => setForm({ ...form, booking: { ...form.booking, [key]: Number(event.target.value) } })} /></label>)}</div>
+            <div><h3 className="font-semibold">Horario semanal de la sucursal</h3><div className="mt-3 space-y-2">{form.location.schedules.map((schedule, index) => <div key={schedule.dayOfWeek} className="grid items-center gap-3 rounded-xl border border-slate-200 p-3 sm:grid-cols-[130px_1fr_1fr]">
+              <label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={schedule.isOpen} onChange={(event) => { const schedules = [...form.location.schedules]; schedules[index] = { ...schedule, isOpen: event.target.checked }; setForm({ ...form, location: { ...form.location, schedules } }); }} />{['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][schedule.dayOfWeek]}</label>
+              <label className="text-xs text-slate-500">Abre<input type="time" className={field} disabled={!schedule.isOpen} value={minutesToTime(schedule.startMinute)} onChange={(event) => { const schedules = [...form.location.schedules]; schedules[index] = { ...schedule, startMinute: timeToMinutes(event.target.value) }; setForm({ ...form, location: { ...form.location, schedules } }); }} /></label>
+              <label className="text-xs text-slate-500">Cierra<input type="time" className={field} disabled={!schedule.isOpen} value={minutesToTime(schedule.endMinute)} onChange={(event) => { const schedules = [...form.location.schedules]; schedules[index] = { ...schedule, endMinute: timeToMinutes(event.target.value) }; setForm({ ...form, location: { ...form.location, schedules } }); }} /></label>
+            </div>)}</div></div>
+            <div><div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="font-semibold">Días cerrados y horarios especiales</h3><p className="mt-1 text-xs text-slate-500">Un día especial reemplaza el horario semanal para esa fecha.</p></div><Button type="button" variant="outline" onClick={addException}><Plus className="h-4 w-4" /> Agregar fecha</Button></div><div className="mt-3 space-y-3">{form.location.exceptions.map((exception, index) => <div key={`${exception.date}-${index}`} className="grid gap-3 rounded-xl border border-slate-200 p-3 sm:grid-cols-[1fr_1fr_1fr_auto]">
+              <label className="text-xs text-slate-500">Fecha<input type="date" className={field} value={exception.date} onChange={(event) => { const exceptions = [...form.location.exceptions]; exceptions[index] = { ...exception, date: event.target.value }; setForm({ ...form, location: { ...form.location, exceptions } }); }} /></label>
+              <label className="text-xs text-slate-500">Motivo<input className={field} value={exception.label} onChange={(event) => { const exceptions = [...form.location.exceptions]; exceptions[index] = { ...exception, label: event.target.value }; setForm({ ...form, location: { ...form.location, exceptions } }); }} placeholder="Festivo, evento…" /></label>
+              <div className="grid grid-cols-2 gap-2"><label className="col-span-2 flex items-center gap-2 text-xs font-semibold"><input type="checkbox" checked={exception.isOpen} onChange={(event) => { const exceptions = [...form.location.exceptions]; exceptions[index] = { ...exception, isOpen: event.target.checked, startMinute: event.target.checked ? exception.startMinute ?? 600 : null, endMinute: event.target.checked ? exception.endMinute ?? 840 : null }; setForm({ ...form, location: { ...form.location, exceptions } }); }} /> Abierto con horario especial</label>{exception.isOpen && <><input type="time" aria-label="Apertura especial" className="admin-input" value={minutesToTime(exception.startMinute ?? 600)} onChange={(event) => { const exceptions = [...form.location.exceptions]; exceptions[index] = { ...exception, startMinute: timeToMinutes(event.target.value) }; setForm({ ...form, location: { ...form.location, exceptions } }); }} /><input type="time" aria-label="Cierre especial" className="admin-input" value={minutesToTime(exception.endMinute ?? 840)} onChange={(event) => { const exceptions = [...form.location.exceptions]; exceptions[index] = { ...exception, endMinute: timeToMinutes(event.target.value) }; setForm({ ...form, location: { ...form.location, exceptions } }); }} /></>}</div>
+              <button type="button" className="round-control self-end text-red-700" aria-label={`Eliminar fecha ${exception.date}`} onClick={() => setForm({ ...form, location: { ...form.location, exceptions: form.location.exceptions.filter((_, itemIndex) => itemIndex !== index) } })}><Trash2 className="h-4 w-4" /></button>
+            </div>)}{form.location.exceptions.length === 0 && <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">No hay cierres ni horarios especiales configurados.</p>}</div></div>
+          </div>}
 
           {activeTab === 'payments' && <div className="space-y-6"><div><h2 className="text-lg font-bold">Métodos de pago</h2><p className="mt-1 text-sm text-slate-500">El pago en línea solo se publica cuando el servidor tiene un proveedor configurado.</p></div><div className={`rounded-xl border p-4 ${data.paymentConfiguration.onlineConfigured ? 'border-emerald-200 bg-emerald-50' : 'border-amber-200 bg-amber-50'}`}><p className="font-semibold">Proveedor: {data.paymentConfiguration.provider}</p><p className="mt-1 text-sm">{data.paymentConfiguration.onlineConfigured ? `Configurado para ${data.paymentConfiguration.environment}.` : 'Faltan variables de entorno del proveedor. La opción permanece oculta para clientes.'}</p></div><label className="flex min-h-14 items-center justify-between rounded-xl border border-slate-200 p-4"><span><strong className="block text-sm">Pago en el local</strong><small className="text-slate-500">Permite confirmar la cita sin checkout.</small></span><input type="checkbox" className="h-5 w-5" checked={form.payments.allowCash} onChange={(event) => setForm({ ...form, payments: { ...form.payments, allowCash: event.target.checked } })} /></label><label className="flex min-h-14 items-center justify-between rounded-xl border border-slate-200 p-4"><span><strong className="block text-sm">Pago en línea</strong><small className="text-slate-500">Checkout alojado, webhook e idempotencia.</small></span><input type="checkbox" className="h-5 w-5" checked={form.payments.allowOnline} disabled={!data.paymentConfiguration.onlineConfigured} onChange={(event) => setForm({ ...form, payments: { ...form.payments, allowOnline: event.target.checked } })} /></label></div>}
         </article>
       </section>
     </div>
   );
+}
+
+function minutesToTime(value: number) {
+  const safe = Math.min(value, 1439);
+  return `${String(Math.floor(safe / 60)).padStart(2, '0')}:${String(safe % 60).padStart(2, '0')}`;
+}
+
+function timeToMinutes(value: string) {
+  const [hours, minutes] = value.split(':').map(Number);
+  return hours * 60 + minutes;
 }

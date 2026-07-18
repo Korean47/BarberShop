@@ -320,26 +320,30 @@ export async function manageAppointment(
     if (!canTransitionAppointment(appointment.status, 'CANCELLED')) {
       throw conflict('INVALID_STATUS', 'La cita ya no se puede cancelar');
     }
-    const updated = await prisma.appointment.update({
-      where: { id: appointment.id, tenantId: tenant.id },
-      data: {
-        status: 'CANCELLED',
-        version: { increment: 1 },
-        statusHistory: {
-          create: { fromStatus: appointment.status, toStatus: 'CANCELLED', reason: input.reason ?? 'Cancelada por cliente' },
-        },
-        notifications: {
-          create: {
-            tenantId: tenant.id,
-            channel,
-            recipient,
-            templateKey: 'appointment.cancelled',
-            idempotencyKey: `appointment:${appointment.id}:cancelled:v${nextVersion}:${channel}`,
-            scheduledAt: new Date(),
+    const updated = await prisma.$transaction(async (tx) => {
+      await tx.payment.updateMany({ where: { appointmentId: appointment.id, status: 'PENDING' }, data: { status: 'CANCELLED' } });
+      return tx.appointment.update({
+        where: { id: appointment.id, tenantId: tenant.id },
+        data: {
+          status: 'CANCELLED',
+          holdExpiresAt: null,
+          version: { increment: 1 },
+          statusHistory: {
+            create: { fromStatus: appointment.status, toStatus: 'CANCELLED', reason: input.reason ?? 'Cancelada por cliente' },
+          },
+          notifications: {
+            create: {
+              tenantId: tenant.id,
+              channel,
+              recipient,
+              templateKey: 'appointment.cancelled',
+              idempotencyKey: `appointment:${appointment.id}:cancelled:v${nextVersion}:${channel}`,
+              scheduledAt: new Date(),
+            },
           },
         },
-      },
-      include: appointmentInclude,
+        include: appointmentInclude,
+      });
     });
     return toAppointmentDto(updated, tenant.timezone);
   }

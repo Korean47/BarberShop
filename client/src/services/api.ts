@@ -9,6 +9,7 @@ import type {
   TenantContextData,
   UpdateAppointmentInput,
   AdminCatalogData,
+  AdminPaymentsData,
   AdminSettingsData,
 } from '../types';
 
@@ -173,6 +174,10 @@ export const getAdminSettings = () => fetchJSON<AdminSettingsData>('/admin/setti
 export const updateAdminSettings = (data: unknown) =>
   fetchJSON<AdminSettingsData>('/admin/settings', { method: 'PATCH', body: JSON.stringify(data) });
 export const getAdminCatalog = () => fetchJSON<AdminCatalogData>('/admin/catalog');
+export const createAdminCategory = (data: unknown) =>
+  fetchJSON('/admin/categories', { method: 'POST', body: JSON.stringify(data) });
+export const updateAdminCategory = (id: string, data: unknown) =>
+  fetchJSON(`/admin/categories/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
 export const createAdminService = (data: unknown) =>
   fetchJSON('/admin/services', { method: 'POST', body: JSON.stringify(data) });
 export const updateAdminService = (id: string, data: unknown) =>
@@ -181,3 +186,11 @@ export const createAdminBarber = (data: unknown) =>
   fetchJSON('/admin/barbers', { method: 'POST', body: JSON.stringify(data) });
 export const updateAdminBarber = (id: string, data: unknown) =>
   fetchJSON(`/admin/barbers/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+export const getAdminPayments = (filters?: { status?: string; method?: string }) => {
+  const query = new URLSearchParams();
+  if (filters?.status) query.set('status', filters.status.toUpperCase());
+  if (filters?.method) query.set('method', filters.method.toUpperCase());
+  return fetchJSON<AdminPaymentsData>(`/admin/payments${query.size ? `?${query}` : ''}`);
+};
+export const markAdminCashPaymentPaid = (id: string) =>
+  fetchJSON<{ id: string; status: string; paidAt: string | null }>(`/admin/payments/${id}/paid`, { method: 'PATCH', body: JSON.stringify({}) });

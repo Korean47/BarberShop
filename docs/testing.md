@@ -26,9 +26,12 @@ npm run verify
 - Presupuesto inicial: menos de 150 kB gzip; presupuesto de la portada: menos de 200 kB gzip.
 - QA real de reservación: creación, consulta segura, reprogramación, límite tardío y cancelación sincronizada con administración.
 - QA de pagos: aprobación, rechazo, idempotencia y liberación de horario al vencer la retención.
+- QA administrativo: edición real de categorías/servicios, jornadas semanales, cierres especiales, descansos y ausencias; cada cambio alteró la disponibilidad pública esperada y después se revirtió.
+- QA de caja: movimientos y totales derivados de pagos persistidos, cancelación sincronizada y registro manual auditado de cobros en efectivo.
+- QA de portada: selección automática del video vertical en 390×844 y horizontal en 1366×768, reproducción lista (`readyState=4`), autoplay activo, cero desbordamiento y fallback conservado.
 - QA responsive sin desbordamiento horizontal en 320×568, 360×640, 375×667, 390×844, 412×915, 430×932, 768×1024, 1024×768, 1366×768 y 1440×900.
 - Consola del navegador: cero errores y cero advertencias en los recorridos probados.
 
 ## Pruebas que requieren PostgreSQL/credenciales
 
-CI aplica la migración completa. Antes de producción ejecutar las mismas pruebas con Stripe CLI, S3 real y el proveedor transaccional seleccionado; mantener pruebas de aislamiento con dos tenants y dos transacciones concurrentes sobre el mismo rango. También debe validarse el medio final licenciado de portada en conexiones lentas y dispositivos físicos.
+CI aplica la migración completa, incluida la conciliación de pagos pendientes pertenecientes a citas canceladas. Antes de producción ejecutar las mismas pruebas con Stripe CLI, S3 real y el proveedor transaccional seleccionado; mantener pruebas de aislamiento con dos tenants y dos transacciones concurrentes sobre el mismo rango. También debe validarse el medio final licenciado de portada en conexiones lentas y dispositivos físicos.

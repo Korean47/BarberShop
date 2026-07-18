@@ -104,9 +104,11 @@ async function main() {
 
   await prisma.tenantBranding.upsert({
     where: { tenantId: ids.tenant },
-    update: {
-      heroImageUrl: '/images/hero-local.webp',
-      heroPosterUrl: '/images/hero-local.webp',
+      update: {
+        heroImageUrl: '/images/hero-local.webp',
+        heroVideoUrl: '/videos/Horizontal.mp4',
+        heroMobileVideoUrl: '/videos/Vertical.mp4',
+        heroPosterUrl: '/images/hero-local.webp',
       heroFallbackUrls: JSON.stringify(['/images/hero-local.webp', '/images/corte-clasico.webp', '/images/barba.webp']),
       heroTitle: 'Cortes y barba, con tiempo para hacerlo bien.',
       heroSubtitle: 'Elige servicio, barbero y horario. Tu cita queda lista en pocos pasos.',
@@ -120,10 +122,12 @@ async function main() {
       fontFamily: 'DM Sans',
       publishedAt: new Date(),
     },
-    create: {
-      tenantId: ids.tenant,
-      heroImageUrl: '/images/hero-local.webp',
-      heroPosterUrl: '/images/hero-local.webp',
+      create: {
+        tenantId: ids.tenant,
+        heroImageUrl: '/images/hero-local.webp',
+        heroVideoUrl: '/videos/Horizontal.mp4',
+        heroMobileVideoUrl: '/videos/Vertical.mp4',
+        heroPosterUrl: '/images/hero-local.webp',
       heroFallbackUrls: JSON.stringify(['/images/hero-local.webp', '/images/corte-clasico.webp', '/images/barba.webp']),
       heroTitle: 'Cortes y barba, con tiempo para hacerlo bien.',
       heroSubtitle: 'Elige servicio, barbero y horario. Tu cita queda lista en pocos pasos.',
