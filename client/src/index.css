@@ -18,8 +18,10 @@
   --success: #237A48;
   --font-display: "Bricolage Grotesque Variable", "Bricolage Grotesque Fallback", sans-serif;
   --font-interface: "Instrument Sans Variable", "Instrument Sans Fallback", system-ui, sans-serif;
+  --font-home-hero: "Instrument Sans Variable", "Instrument Sans Fallback", system-ui, sans-serif;
   --font-display-stretch: 100%;
   --font-interface-stretch: 100%;
+  --font-home-hero-stretch: 100%;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
@@ -45,13 +47,16 @@
 :root[data-font-package="technical"] {
   --font-display: "Martian Grotesk Variable", "Martian Grotesk Fallback", sans-serif;
   --font-interface: "Martian Grotesk Variable", "Martian Grotesk Fallback", system-ui, sans-serif;
+  --font-home-hero: "Martian Grotesk Variable", "Martian Grotesk Fallback", sans-serif;
   --font-display-stretch: 112%;
   --font-interface-stretch: 96%;
+  --font-home-hero-stretch: 108%;
 }
 
 :root[data-font-package="signage"] {
   --font-display: "Barlow", "Barlow Fallback", sans-serif;
   --font-interface: "Instrument Sans Variable", "Instrument Sans Fallback", system-ui, sans-serif;
+  --font-home-hero: "Barlow", "Barlow Fallback", sans-serif;
 }
 
 @layer base {
@@ -70,6 +75,7 @@
   .section-container { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8; }
   .font-display { font-family: var(--font-display); font-stretch: var(--font-display-stretch); }
   .type-display { font-family: var(--font-display); font-size: var(--text-display); font-stretch: var(--font-display-stretch); font-weight: var(--font-weight-semibold); letter-spacing: -.04em; line-height: .96; }
+  .type-home-hero { font-family: var(--font-home-hero); font-size: clamp(2.6rem, 2rem + 3vw, 5.15rem); font-stretch: var(--font-home-hero-stretch); font-weight: var(--font-weight-semibold); letter-spacing: -.045em; line-height: .98; }
   .type-heading-1 { font-family: var(--font-display); font-size: var(--text-3xl); font-stretch: var(--font-display-stretch); font-weight: var(--font-weight-semibold); letter-spacing: var(--tracking-tight); line-height: var(--line-height-tight); }
   .type-heading-2 { font-family: var(--font-display); font-size: var(--text-2xl); font-stretch: var(--font-display-stretch); font-weight: var(--font-weight-semibold); letter-spacing: var(--tracking-tight); line-height: var(--line-height-heading); }
   .type-heading-3 { font-family: var(--font-display); font-size: var(--text-xl); font-stretch: var(--font-display-stretch); font-weight: var(--font-weight-semibold); line-height: var(--line-height-heading); }
@@ -136,6 +142,7 @@
   .badge-pending { @apply border-amber-200 bg-amber-50 text-amber-800; }
   .badge-cancelled { @apply border-red-200 bg-red-50 text-red-800; }
   .badge-completed { @apply border-blue-200 bg-blue-50 text-blue-800; }
+  .home-deferred-section { content-visibility: auto; contain-intrinsic-size: auto 800px; }
 }
 
 .price, .metric, time, input[type="date"], input[type="time"], input[type="number"] { font-variant-numeric: tabular-nums; }

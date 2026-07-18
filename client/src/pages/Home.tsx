@@ -9,6 +9,26 @@ import { useTenant } from '../hooks/useTenant';
 import type { Barber, Service } from '../types';
 import { formatDuration, formatPrice, parseSpecialties } from '../utils/helpers';
 
+const optimizedServiceImages = new Set([
+  '/images/barba.webp',
+  '/images/corte-barba.webp',
+  '/images/corte-clasico.webp',
+  '/images/corte-infantil.webp',
+  '/images/corte-personalizado.webp',
+  '/images/degradado.webp',
+]);
+
+const optimizedBarberImages = new Set([
+  '/images/barber-1.webp',
+  '/images/barber-2.webp',
+  '/images/barber-3.webp',
+  '/images/barber-4.webp',
+]);
+
+function optimizedImagePath(source: string, width: number) {
+  return source.replace(/\.webp$/, `-${width}.webp`);
+}
+
 function servicePrice(service: Service) {
   const price = formatPrice(service.price);
   if (service.priceType === 'starting_at') return `Desde ${price}`;
@@ -38,9 +58,15 @@ export function Home() {
   const [touchStart, setTouchStart] = useState<number | null>(null);
 
   useEffect(() => {
+    let active = true;
     Promise.all([getServices(), getBarbers()])
-      .then(([serviceList, barberList]) => { setServices(serviceList); setBarbers(barberList); })
-      .catch(() => toast.error('No pudimos actualizar los servicios y horarios'));
+      .then(([serviceList, barberList]) => {
+        if (!active) return;
+        setServices(serviceList);
+        setBarbers(barberList);
+      })
+      .catch(() => active && toast.error('No pudimos actualizar los servicios y horarios'));
+    return () => { active = false; };
   }, []);
 
   const location = tenant.locations.find((item) => item.isDefault) ?? tenant.locations[0];
@@ -50,6 +76,7 @@ export function Home() {
   const heroTitle = tenant.branding?.heroTitle || 'Cortes y barba, con tiempo para hacerlo bien.';
   const heroSubtitle = tenant.branding?.heroSubtitle || 'Elige servicio, barbero y horario. Tu cita queda lista en pocos pasos.';
   const availableServices = services.slice(0, 6);
+  const shopImage = tenant.branding?.shopImageUrl || tenant.branding?.heroImageUrl || '/images/hero-local.webp';
 
   const moveBarber = (direction: number) => {
     if (!barbers.length) return;
@@ -72,7 +99,7 @@ export function Home() {
         <div className="section-container relative z-10 flex min-h-[calc(100svh-64px)] items-end pb-[max(3rem,env(safe-area-inset-bottom))] pt-20 sm:min-h-[calc(100svh-68px)] sm:items-center sm:py-20">
           <div className="max-w-2xl">
             <p className="flex items-center gap-2 text-sm font-semibold tracking-wide text-white/80"><Scissors className="h-4 w-4 text-[#D7D0C6]" /> {tenant.name}</p>
-            <h1 className="type-display mt-5 max-w-[13ch] text-balance">{heroTitle}</h1>
+            <h1 className="type-home-hero mt-5 max-w-[14ch] text-balance">{heroTitle}</h1>
             <p className="type-body-large mt-5 max-w-xl text-white/82">{heroSubtitle}</p>
             <div className="mt-8 flex flex-col gap-3 min-[390px]:flex-row">
               <Link to="/book" className="button-primary min-h-[52px] px-6">Agendar cita <ArrowRight className="h-5 w-5" /></Link>
@@ -82,24 +109,26 @@ export function Home() {
         </div>
       </section>
 
-      <section id="services" className="scroll-mt-20 bg-[var(--surface-light)] py-16 sm:py-24">
+      <section id="services" className="home-deferred-section scroll-mt-20 bg-[var(--surface-light)] py-16 sm:py-24">
         <div className="section-container">
           <div className="section-heading"><p className="eyebrow">Servicios</p><h2>Opciones y precios claros</h2><p>Selecciona un servicio para comenzar la reserva. La disponibilidad se calcula con la agenda de cada barbero.</p></div>
           <div className="mt-9 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {availableServices.map((service) => (
-              <Link key={service.id} to={`/book?service=${service.id}`} className="service-card group">
-                <img src={service.imageUrl || '/images/corte-clasico.webp'} alt={`Referencia de ${service.name}`} width="720" height="540" loading="lazy" />
+            {availableServices.map((service) => {
+              const serviceImage = service.imageUrl || '/images/corte-clasico.webp';
+              const serviceSrcSet = optimizedServiceImages.has(serviceImage) ? `${optimizedImagePath(serviceImage, 320)} 320w, ${serviceImage} 720w` : undefined;
+              return <Link key={service.id} to={`/book?service=${service.id}`} className="service-card group">
+                <img src={serviceImage} srcSet={serviceSrcSet} sizes="(min-width: 640px) 128px, 108px" alt={`Referencia de ${service.name}`} width="720" height="540" loading="lazy" decoding="async" fetchPriority="low" />
                 <span className="min-w-0 p-4">
                   <span className="flex items-start justify-between gap-3"><strong>{service.name}</strong><b>{servicePrice(service)}</b></span>
                   <span className="mt-3 flex items-center justify-between text-sm text-[var(--muted)]"><span className="flex items-center gap-1.5"><Clock3 className="h-4 w-4" /> {formatDuration(service.duration)}</span><ArrowRight className="h-4 w-4 text-[var(--accent)] transition-transform group-hover:translate-x-1" /></span>
                 </span>
-              </Link>
-            ))}
+              </Link>;
+            })}
           </div>
         </div>
       </section>
 
-      <section id="barbers" className="scroll-mt-20 bg-[var(--background)] py-16 sm:py-24">
+      <section id="barbers" className="home-deferred-section scroll-mt-20 bg-[var(--background)] py-16 sm:py-24">
         <div className="section-container">
           <div className="section-heading"><p className="eyebrow">Barberos</p><h2>Elige quién te atiende</h2><p>Cada perfil indica los servicios que realiza. También puedes seleccionar al primero disponible durante la reserva.</p></div>
           {currentBarber && (
@@ -113,7 +142,7 @@ export function Home() {
                 setTouchStart(null);
               }}
             >
-              <img key={currentBarber.id} src={currentBarber.photo} alt={`Retrato de ${currentBarber.name}`} width="900" height="900" className="barber-photo-fade aspect-[4/3] h-full w-full object-cover lg:aspect-auto lg:min-h-[520px]" />
+              <img key={currentBarber.id} src={currentBarber.photo} srcSet={optimizedBarberImages.has(currentBarber.photo) ? `${optimizedImagePath(currentBarber.photo, 480)} 480w, ${currentBarber.photo} 640w` : undefined} sizes="(min-width: 1024px) 54vw, 100vw" alt={`Retrato de ${currentBarber.name}`} width="640" height="640" loading="lazy" decoding="async" fetchPriority="low" className="barber-photo-fade aspect-[4/3] h-full w-full object-cover lg:aspect-auto lg:min-h-[520px]" />
               <div className="flex min-w-0 flex-col justify-center p-6 sm:p-10 lg:p-14">
                 <p className="eyebrow">Barbero {activeBarber + 1} de {barbers.length}</p>
                 <h3 className="mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">{currentBarber.name}</h3>
@@ -131,7 +160,7 @@ export function Home() {
         </div>
       </section>
 
-      <section id="location" className="scroll-mt-20 bg-[var(--surface-light)] py-16 sm:py-24">
+      <section id="location" className="home-deferred-section scroll-mt-20 bg-[var(--surface-light)] py-16 sm:py-24">
         <div className="section-container grid gap-8 lg:grid-cols-[.95fr_1.05fr] lg:items-center">
           <div>
             <div className="section-heading"><p className="eyebrow">Ubicación</p><h2>Información para tu visita</h2></div>
@@ -146,7 +175,7 @@ export function Home() {
             </div>
           </div>
           <a href={mapsUrl} target="_blank" rel="noreferrer" className="group relative min-h-[360px] overflow-hidden rounded-[1.5rem] bg-[var(--stone)] sm:min-h-[480px]" aria-label={`Abrir ubicación de ${tenant.name} en Google Maps`}>
-            <img src={tenant.branding?.shopImageUrl || tenant.branding?.heroImageUrl || '/images/hero-local.webp'} alt={`Exterior o interior de ${tenant.name}`} width="1200" height="900" loading="lazy" className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]" />
+            <img src={shopImage} srcSet={shopImage === '/images/hero-local.webp' ? '/images/hero-local-800.webp 800w, /images/hero-local-1200.webp 1200w, /images/hero-local.webp 1600w' : undefined} sizes="(min-width: 1024px) 53vw, 100vw" alt={`Exterior o interior de ${tenant.name}`} width="1600" height="900" loading="lazy" decoding="async" fetchPriority="low" className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]" />
             <span className="absolute inset-x-4 bottom-4 flex items-center justify-between rounded-2xl bg-[var(--surface-light)] p-4 font-semibold text-[var(--text)] shadow-lg sm:inset-x-6 sm:bottom-6"><span className="min-w-0 truncate">Abrir en Google Maps</span><MapPin className="h-5 w-5 shrink-0 text-[var(--accent)]" /></span>
           </a>
         </div>
