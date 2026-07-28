@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: barbershop
+      POSTGRES_USER: barbershop
+      POSTGRES_PASSWORD: barbershop
+    ports:
+      - "5432:5432"
+    volumes:
+      - barbershop_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U barbershop -d barbershop"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  barbershop_postgres:

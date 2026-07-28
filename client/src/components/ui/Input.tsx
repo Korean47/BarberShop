@@ -1,54 +1,29 @@
-import React from 'react';
+import type { InputHTMLAttributes, ReactNode } from 'react';
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
-  icon?: React.ReactNode;
+  hint?: string;
+  icon?: ReactNode;
 }
 
-export function Input({
-  label,
-  error,
-  icon,
-  className = '',
-  id,
-  ...props
-}: InputProps) {
-  const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
-
+export function Input({ label, error, hint, icon, className = '', id, ...props }: InputProps) {
+  const inputId = id ?? label?.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const descriptionId = error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined;
   return (
     <div className="space-y-1.5">
-      {label && (
-        <label
-          htmlFor={inputId}
-          className="block text-sm font-medium text-slate-300"
-        >
-          {label}
-        </label>
-      )}
+      {label && <label htmlFor={inputId} className="block text-sm font-bold text-current">{label}</label>}
       <div className="relative">
-        {icon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
-            {icon}
-          </div>
-        )}
+        {icon && <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]">{icon}</span>}
         <input
           id={inputId}
-          className={`
-            w-full bg-slate-800/50 border border-slate-700 rounded-xl
-            px-4 py-2.5 text-sm text-slate-200 placeholder:text-slate-500
-            focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500
-            transition-all duration-200
-            ${icon ? 'pl-10' : ''}
-            ${error ? 'border-red-500/50 focus:ring-red-500/40 focus:border-red-500' : ''}
-            ${className}
-          `}
+          aria-invalid={Boolean(error)}
+          aria-describedby={descriptionId}
+          className={`min-h-12 w-full rounded-xl border bg-white px-4 text-base text-[var(--text)] outline-none transition placeholder:text-[#7A8285] focus:border-[var(--primary)] focus:ring-4 focus:ring-[#183A44]/10 ${icon ? 'pl-10' : ''} ${error ? 'border-[var(--error)]' : 'border-[var(--stone)]'} ${className}`}
           {...props}
         />
       </div>
-      {error && (
-        <p className="text-xs text-red-400 mt-1">{error}</p>
-      )}
+      {error ? <p id={descriptionId} className="text-sm font-semibold text-[var(--error)]">{error}</p> : hint ? <p id={descriptionId} className="text-xs text-[var(--muted)]">{hint}</p> : null}
     </div>
   );
 }

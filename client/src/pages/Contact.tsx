@@ -1,143 +1,39 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Send, MapPin, Phone, Mail, Clock } from 'lucide-react';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Card } from '../components/ui/Card';
-import toast from 'react-hot-toast';
+import { Clock3, Mail, MapPin, Phone } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useTenant } from '../hooks/useTenant';
 
 export function Contact() {
-  const [form, setForm] = useState({ name: '', email: '', message: '' });
-  const [sending, setSending] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.name || !form.email || !form.message) {
-      toast.error('Please fill in all fields');
-      return;
-    }
-    setSending(true);
-    // Simulate send
-    await new Promise((r) => setTimeout(r, 1000));
-    toast.success('Message sent! (Note: This is a demo app, no actual email was sent.)');
-    setForm({ name: '', email: '', message: '' });
-    setSending(false);
-  };
-
+  const { tenant } = useTenant();
+  const location = tenant.locations.find((item) => item.isDefault) ?? tenant.locations[0];
+  const address = location ? `${location.addressLine1}, ${location.city}, ${location.state}` : 'Hermosillo, Sonora';
   return (
-    <div className="section-container py-16">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-12"
-      >
-        <span className="text-brand-400 text-sm font-medium tracking-widest uppercase">
-          Contact
-        </span>
-        <h1 className="text-3xl sm:text-4xl font-display font-bold text-white mt-3 mb-4">
-          Get in Touch
-        </h1>
-        <p className="text-slate-400 max-w-lg mx-auto">
-          Have a question or want to book a custom session? Drop us a message.
-        </p>
-      </motion.div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 max-w-5xl mx-auto">
-        {/* Contact form */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
-          className="lg:col-span-3"
-        >
-          <div className="glass-card p-6">
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <Input
-                label="Name"
-                placeholder="Your name"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-              />
-              <Input
-                label="Email"
-                type="email"
-                placeholder="you@example.com"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-              />
-              <div className="space-y-1.5">
-                <label className="block text-sm font-medium text-slate-300">
-                  Message
-                </label>
-                <textarea
-                  rows={5}
-                  placeholder="How can we help?"
-                  value={form.message}
-                  onChange={(e) => setForm({ ...form, message: e.target.value })}
-                  className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200 resize-none"
-                />
-              </div>
-              <Button type="submit" loading={sending} className="w-full justify-center">
-                <Send className="w-4 h-4" />
-                Send Message
-              </Button>
-            </form>
+    <div className="section-container py-14 sm:py-20">
+      <div className="mx-auto max-w-5xl">
+        <div className="max-w-2xl">
+          <p className="text-xs font-black uppercase tracking-wider text-[var(--accent)]">Cómo llegar</p>
+          <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">Estamos cerca. Ven cuando te toque.</h1>
+          <p className="mt-4 text-base leading-7 text-[#587078]">Agenda antes de venir para encontrar tu silla lista y evitar la espera.</p>
+        </div>
+        <div className="mt-8 grid overflow-hidden rounded-2xl border border-[#17313a]/10 bg-white shadow-md lg:grid-cols-[1.1fr_.9fr]">
+          <div className="min-h-72 bg-[var(--brand)] p-7 text-white sm:p-10">
+            <MapPin className="h-8 w-8 text-[var(--brand-soft)]" />
+            <h2 className="mt-6 text-3xl font-black">{location?.name ?? tenant.name}</h2>
+            <p className="mt-3 max-w-sm text-sm leading-6 text-white/75">{address}</p>
+            <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`} target="_blank" rel="noreferrer" className="mt-7 inline-flex min-h-12 items-center rounded-xl bg-white px-5 text-sm font-black text-[#17313a]">Abrir en mapas</a>
           </div>
-        </motion.div>
-
-        {/* Info cards */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="lg:col-span-2 space-y-4"
-        >
-          <Card className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-brand-500/10 flex items-center justify-center flex-shrink-0">
-              <MapPin className="w-5 h-5 text-brand-400" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-white mb-1">Location</h3>
-              <p className="text-sm text-slate-400">123 Barber Street<br />Downtown, NY 10001</p>
-            </div>
-          </Card>
-
-          <Card className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-brand-500/10 flex items-center justify-center flex-shrink-0">
-              <Phone className="w-5 h-5 text-brand-400" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-white mb-1">Phone</h3>
-              <p className="text-sm text-slate-400">(555) 123-4567</p>
-            </div>
-          </Card>
-
-          <Card className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-brand-500/10 flex items-center justify-center flex-shrink-0">
-              <Mail className="w-5 h-5 text-brand-400" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-white mb-1">Email</h3>
-              <p className="text-sm text-slate-400">hello@blades.com</p>
-            </div>
-          </Card>
-
-          <Card className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-brand-500/10 flex items-center justify-center flex-shrink-0">
-              <Clock className="w-5 h-5 text-brand-400" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-white mb-1">Hours</h3>
-              <div className="text-sm text-slate-400 space-y-0.5">
-                <p>Mon–Wed: 9am – 6pm</p>
-                <p>Thu–Fri: 9am – 8pm</p>
-                <p>Sat: 9am – 5pm</p>
-                <p>Sun: Closed</p>
-              </div>
-            </div>
-          </Card>
-        </motion.div>
+          <div className="grid gap-6 p-7 sm:p-10">
+            <ContactRow icon={Phone} label="Teléfono" value={location?.phone ?? tenant.contactPhone ?? 'Atención por cita'} href={tenant.contactPhone ? `tel:${tenant.contactPhone}` : undefined} />
+            <ContactRow icon={Mail} label="Correo" value={tenant.contactEmail ?? 'Disponible próximamente'} href={tenant.contactEmail ? `mailto:${tenant.contactEmail}` : undefined} />
+            <ContactRow icon={Clock3} label="Horario" value="Lunes a sábado · Consulta disponibilidad en línea" />
+            <Link to="/book" className="mt-2 inline-flex min-h-12 items-center justify-center rounded-xl bg-[var(--accent)] px-6 font-black text-white">Agendar cita</Link>
+          </div>
+        </div>
       </div>
     </div>
   );
+}
+
+function ContactRow({ icon: Icon, label, value, href }: { icon: typeof Phone; label: string; value: string; href?: string }) {
+  const content = <><span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#eaf4f5] text-[var(--brand)]"><Icon className="h-5 w-5" /></span><span><span className="block text-xs font-black uppercase tracking-wider text-[#6b7e84]">{label}</span><span className="mt-1 block text-sm font-bold text-[#17313a]">{value}</span></span></>;
+  return href ? <a href={href} className="flex items-center gap-4 rounded-xl hover:bg-[#17313a]/[.02]">{content}</a> : <div className="flex items-center gap-4">{content}</div>;
 }

@@ -12,7 +12,7 @@ export function formatDateToAPI(date: Date): string {
  * Format a date for display: "Monday, May 18, 2026"
  */
 export function formatDateLong(date: Date): string {
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString('es-MX', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -24,7 +24,7 @@ export function formatDateLong(date: Date): string {
  * Format a date for short display: "May 18"
  */
 export function formatDateShort(date: Date): string {
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return date.toLocaleDateString('es-MX', { month: 'short', day: 'numeric' });
 }
 
 /**
@@ -32,16 +32,20 @@ export function formatDateShort(date: Date): string {
  */
 export function formatTime(time: string): string {
   const [h, m] = time.split(':').map(Number);
-  const period = h >= 12 ? 'PM' : 'AM';
-  const hour12 = h % 12 || 12;
-  return `${hour12}:${m.toString().padStart(2, '0')} ${period}`;
+  const date = new Date();
+  date.setHours(h, m, 0, 0);
+  return date.toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit' });
 }
 
 /**
  * Format price as currency.
  */
 export function formatPrice(price: number): string {
-  return `$${price.toFixed(0)}`;
+  return new Intl.NumberFormat('es-MX', {
+    style: 'currency',
+    currency: 'MXN',
+    maximumFractionDigits: 0,
+  }).format(price);
 }
 
 /**

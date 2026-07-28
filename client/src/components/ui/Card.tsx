@@ -12,7 +12,7 @@ export function Card({ children, className = '', hover = false, onClick }: CardP
     <div
       className={`
         ${hover ? 'glass-card-hover cursor-pointer' : 'glass-card'}
-        p-6 ${className}
+        p-4 sm:p-5 ${className}
       `}
       onClick={onClick}
       role={onClick ? 'button' : undefined}

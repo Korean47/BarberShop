@@ -1,167 +1,37 @@
 import { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Scissors, Menu, X } from 'lucide-react';
-import { Button } from '../components/ui/Button';
+import { Menu, Scissors, X } from 'lucide-react';
+import { useTenant } from '../hooks/useTenant';
 
-const navLinks = [
-  { to: '/', label: 'Home' },
-  { to: '/book', label: 'Book Now' },
-  { to: '/contact', label: 'Contact' },
+const links = [
+  { href: '/#services', label: 'Servicios' },
+  { href: '/#barbers', label: 'Barberos' },
+  { href: '/#location', label: 'Ubicación' },
 ];
 
 export function MainLayout() {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const { tenant, unavailable } = useTenant();
   const location = useLocation();
 
+  if (location.pathname === '/book') return <main><Outlet /></main>;
+
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Navbar */}
-      <nav className="sticky top-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5">
-        <div className="section-container">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center">
-                <Scissors className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-display text-xl font-semibold text-white">
-                Blades
-              </span>
-            </Link>
-
-            {/* Desktop nav */}
-            <div className="hidden md:flex items-center gap-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className={`
-                    px-4 py-2 rounded-lg text-sm font-medium transition-colors
-                    ${
-                      location.pathname === link.to
-                        ? 'text-brand-400 bg-brand-500/10'
-                        : 'text-slate-400 hover:text-white hover:bg-white/5'
-                    }
-                  `}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-
-            {/* Desktop CTA */}
-            <div className="hidden md:flex items-center gap-3">
-              <Link to="/admin">
-                <Button variant="ghost" size="sm">
-                  Admin
-                </Button>
-              </Link>
-              <Link to="/book">
-                <Button size="sm">Book Appointment</Button>
-              </Link>
-            </div>
-
-            {/* Mobile menu button */}
-            <button
-              className="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5"
-              onClick={() => setMobileOpen(!mobileOpen)}
-            >
-              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
+    <div className="min-h-screen bg-[var(--background)] text-[var(--text)]">
+      {unavailable && <div role="status" className="bg-[var(--error)] px-4 py-2 text-center text-sm font-semibold text-white">La agenda no está respondiendo. Intenta nuevamente en unos minutos.</div>}
+      <header className="sticky top-0 z-40 border-b border-black/10 bg-[color:var(--background)]/95 backdrop-blur-lg">
+        <div className="section-container flex h-16 items-center gap-3 sm:h-[68px]">
+          <Link to="/" className="flex min-w-0 items-center gap-2.5" aria-label={`${tenant.name}, inicio`}>
+            {tenant.branding?.logoUrl ? <img src={tenant.branding.logoUrl} alt="" className="h-9 w-auto max-w-36 object-contain" /> : <><span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[var(--primary)] text-white"><Scissors className="h-5 w-5" /></span><span className="truncate font-display text-lg font-semibold tracking-tight sm:text-xl">{tenant.name}</span></>}
+          </Link>
+          <nav className="ml-auto hidden items-center gap-7 lg:flex" aria-label="Navegación principal">{links.map((link) => <a key={link.href} href={link.href} className="text-sm font-medium text-[var(--muted)] hover:text-[var(--text)]">{link.label}</a>)}</nav>
+          <Link to="/appointment" className="ml-auto inline-flex min-h-11 items-center rounded-full border border-[var(--stone)] px-4 text-sm font-semibold hover:border-[var(--primary)] lg:ml-4">Mi cita</Link>
+          <button type="button" className="round-control lg:hidden" aria-label={open ? 'Cerrar menú' : 'Abrir menú'} aria-expanded={open} onClick={() => setOpen((value) => !value)}>{open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}</button>
         </div>
-
-        {/* Mobile menu */}
-        {mobileOpen && (
-          <div className="md:hidden border-t border-white/5 bg-slate-900/95 backdrop-blur-lg">
-            <div className="section-container py-4 space-y-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  onClick={() => setMobileOpen(false)}
-                  className={`
-                    block px-4 py-2.5 rounded-lg text-sm font-medium transition-colors
-                    ${
-                      location.pathname === link.to
-                        ? 'text-brand-400 bg-brand-500/10'
-                        : 'text-slate-400 hover:text-white hover:bg-white/5'
-                    }
-                  `}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <div className="pt-3 border-t border-white/5 space-y-2">
-                <Link to="/admin" onClick={() => setMobileOpen(false)}>
-                  <Button variant="ghost" size="sm" className="w-full justify-center">
-                    Admin Dashboard
-                  </Button>
-                </Link>
-                <Link to="/book" onClick={() => setMobileOpen(false)}>
-                  <Button size="sm" className="w-full justify-center">
-                    Book Appointment
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
-      </nav>
-
-      {/* Page content */}
-      <main className="flex-1">
-        <Outlet />
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-white/5 bg-slate-900/50">
-        <div className="section-container py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* Brand */}
-            <div className="md:col-span-2">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center">
-                  <Scissors className="w-4 h-4 text-white" />
-                </div>
-                <span className="font-display text-lg font-semibold text-white">
-                  Blades
-                </span>
-              </div>
-              <p className="text-sm text-slate-400 max-w-sm">
-                Premium barbershop delivering exceptional grooming experiences.
-                Where tradition meets modern style.
-              </p>
-            </div>
-
-            {/* Hours */}
-            <div>
-              <h4 className="text-sm font-semibold text-white mb-3">Hours</h4>
-              <ul className="space-y-1.5 text-sm text-slate-400">
-                <li>Mon – Wed: 9am – 6pm</li>
-                <li>Thu – Fri: 9am – 8pm</li>
-                <li>Saturday: 9am – 5pm</li>
-                <li>Sunday: Closed</li>
-              </ul>
-            </div>
-
-            {/* Contact */}
-            <div>
-              <h4 className="text-sm font-semibold text-white mb-3">Contact</h4>
-              <ul className="space-y-1.5 text-sm text-slate-400">
-                <li>123 Barber Street</li>
-                <li>Downtown, NY 10001</li>
-                <li>(555) 123-4567</li>
-                <li>hello@blades.com</li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="mt-10 pt-6 border-t border-white/5 text-center text-xs text-slate-500">
-            © {new Date().getFullYear()} Blades Barbershop. All rights reserved.
-          </div>
-        </div>
-      </footer>
+        {open && <nav className="border-t border-black/10 bg-[var(--background)] px-4 py-3 lg:hidden" aria-label="Navegación móvil"><div className="section-container space-y-1 px-0">{links.map((link) => <a key={link.href} href={link.href} onClick={() => setOpen(false)} className="block min-h-12 rounded-xl px-4 py-3 font-semibold hover:bg-[var(--surface-light)]">{link.label}</a>)}<Link to="/admin" onClick={() => setOpen(false)} className="block min-h-12 rounded-xl px-4 py-3 text-sm text-[var(--muted)] hover:bg-[var(--surface-light)]">Acceso administrativo</Link></div></nav>}
+      </header>
+      <main><Outlet /></main>
+      <footer className="border-t border-white/10 bg-[var(--text)] text-white"><div className="section-container grid gap-8 py-10 sm:grid-cols-2"><div><p className="font-display text-xl font-semibold">{tenant.name}</p><p className="mt-3 max-w-md text-sm leading-6 text-white/65">Servicios, disponibilidad y reservaciones en un solo lugar.</p></div><div className="sm:text-right"><Link to="/appointment" className="text-sm font-semibold underline decoration-white/35 underline-offset-4">Consultar mi cita</Link><p className="mt-3 text-xs text-white/45">© {new Date().getFullYear()} {tenant.name}</p></div></div></footer>
     </div>
   );
 }

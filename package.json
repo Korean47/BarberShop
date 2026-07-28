@@ -4,13 +4,18 @@
   "private": true,
   "scripts": {
     "dev": "concurrently -n client,server -c cyan,yellow \"npm run dev:client\" \"npm run dev:server\"",
-    "dev:client": "cd client && npm run dev",
-    "dev:server": "cd server && npm run dev",
-    "install:all": "npm install && cd client && npm install && cd ../server && npm install",
-    "db:push": "cd server && npx prisma db push",
-    "db:seed": "cd server && npx prisma db seed",
-    "db:setup": "cd server && npx prisma db push && npx prisma db seed",
-    "build": "cd client && npm run build"
+    "dev:client": "npm --prefix client run dev",
+    "dev:server": "npm --prefix server run dev",
+    "install:all": "npm install && npm --prefix client install && npm --prefix server install",
+    "db:migrate": "npm --prefix server run db:migrate",
+    "db:seed": "npm --prefix server run db:seed",
+    "db:setup": "npm run db:migrate && npm run db:seed",
+    "lint": "npm --prefix client run lint",
+    "typecheck": "npm --prefix server run typecheck && npm --prefix client run typecheck",
+    "test": "npm --prefix server test && npm --prefix client test",
+    "build": "npm --prefix server run build && npm --prefix client run build",
+    "performance:check": "node scripts/check-performance.mjs",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build && npm run performance:check"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

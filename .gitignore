@@ -141,3 +141,17 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Local generated data
+.data/
+server/prisma/dev.db
+server/prisma/dev.db-journal
+server/prisma/*.db
+server/prisma/*.db-journal
+server/prisma/seed.js
+server/prisma/seed.js.map
+server/prisma/seed.d.ts
+
+# Local QA artifacts
+output/
+.playwright-cli/
